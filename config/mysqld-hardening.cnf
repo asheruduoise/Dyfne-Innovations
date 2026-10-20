@@ -1,0 +1,19 @@
+# MySQL server hardening for the GCR office PC (Spec 4.9 §3 PC/network layer)
+# Windows: append to C:\ProgramData\MySQL\MySQL Server 8.0\my.ini under [mysqld]
+# Linux:   copy to /etc/mysql/mysql.conf.d/zz-gcr-hardening.cnf
+# Restart the MySQL service afterwards.
+[mysqld]
+# Listen on this PC only - nothing on the network can reach port 3306
+bind-address          = 127.0.0.1
+# Turn off the X Protocol listener (port 33060); the app doesn't use it
+mysqlx                = OFF
+# No LOAD DATA LOCAL INFILE (file-read attack path)
+local_infile          = 0
+# Write failed MySQL logins ("Access denied for user ...") to the error log
+log_error_verbosity   = 3
+# Needed for the optional weekly index maintenance / idle-session events
+event_scheduler       = ON
+
+# Windows Firewall (run once in an admin PowerShell) - belt and braces:
+#   New-NetFirewallRule -DisplayName "Block MySQL inbound" -Direction Inbound `
+#     -Protocol TCP -LocalPort 3306,33060 -Action Block
