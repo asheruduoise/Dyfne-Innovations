@@ -37,6 +37,7 @@ GRANT SELECT ON UH_GCR_Inventory.vw_Security_IntegrityExceptions  TO 'gcr_app_ro
 /* ---------- maintenance role ---------- */
 GRANT ALL PRIVILEGES ON UH_GCR_Inventory.* TO 'gcr_dba_role';
 GRANT PROCESS, RELOAD ON *.* TO 'gcr_dba_role';          -- mysqldump / FLUSH for backups
+GRANT SHOW_ROUTINE ON *.* TO 'gcr_dba_role';        -- mysqldump --routines needs this; without it stored procedures are missing from backups
 
 /* Review what each role holds:
    SHOW GRANTS FOR 'gcr_app_role';
