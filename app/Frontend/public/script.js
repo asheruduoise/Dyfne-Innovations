@@ -47,60 +47,91 @@ showPage();
 ================================= */
 
 const transactionTypeSelect = document.getElementById("transaction-type");
+const transactionForm = document.getElementById("withdrawal-form");
+const transactionItems = document.getElementById("transaction-items");
+const transactionFeedback = document.getElementById("transaction-feedback");
+const distributionHeading = Array.from(transactionForm.querySelectorAll("h3"))
+    .find(heading => heading.textContent.trim() === "Distribution Information");
+let nextTransactionItemId = 2;
 
-// Fields displayed only for Stock Out
-const stockOutFieldIds = [
-    "transaction-item-2",
-    "transaction-quantity-2",
-    "distribution-category",
-    "recipient-context",
-    "transaction-purpose"
-];
+function clearTransactionFeedback() {
+    transactionFeedback.textContent = "";
+    transactionItems.querySelectorAll("select").forEach(field => field.setCustomValidity(""));
+}
 
-// Find the Distribution Information heading and description
-const distributionHeading = Array.from(
-    document.querySelectorAll("#withdrawal-form h3")
-).find((heading) =>
-    heading.textContent.trim() === "Distribution Information"
-);
-
-const distributionDescription = distributionHeading?.nextElementSibling;
-
-// Show or hide fields depending on transaction type
 function updateTransactionForm() {
-    if (!transactionTypeSelect) return;
-
     const isStockOut = transactionTypeSelect.value === "out";
-
-    // Toggle Stock Out fields
-    stockOutFieldIds.forEach((id) => {
+    const isStockIn = transactionTypeSelect.value === "in";
+    const reason = document.getElementById("stock-in-reason");
+    document.getElementById("stock-in-reason-group").hidden = !isStockIn;
+    reason.disabled = !isStockIn;
+    reason.required = isStockIn;
+    for (const id of ["distribution-category", "recipient-context", "transaction-purpose"]) {
         const field = document.getElementById(id);
-        const group = field?.closest(".form-group");
+        field.closest(".form-group").hidden = !isStockOut;
+        field.disabled = !isStockOut;
+        field.required = isStockOut && id !== "transaction-purpose";
+    }
+    distributionHeading.hidden = !isStockOut;
+    distributionHeading.nextElementSibling.hidden = !isStockOut;
+    clearTransactionFeedback();
+}
 
-        if (group) {
-            group.style.display = isStockOut ? "" : "none";
-        }
+function updateTransactionRemoveButtons() {
+    const rows = transactionItems.querySelectorAll(".transaction-item-row");
+    rows.forEach(row => {
+        row.querySelector(".remove-transaction-item").disabled = rows.length === 1;
     });
-
-    // Toggle Distribution Information heading
-    if (distributionHeading) {
-        distributionHeading.style.display = isStockOut ? "" : "none";
-    }
-
-    // Toggle Distribution Information description
-    if (distributionDescription) {
-        distributionDescription.style.display = isStockOut ? "" : "none";
-    }
 }
 
-// Update the form when the transaction type changes
-if (transactionTypeSelect) {
-    transactionTypeSelect.addEventListener("change", updateTransactionForm);
+document.getElementById("add-transaction-item").addEventListener("click", () => {
+    const row = transactionItems.firstElementChild.cloneNode(true);
+    const item = row.querySelector("select");
+    const quantity = row.querySelector("input");
+    item.id = "transaction-item-" + nextTransactionItemId;
+    quantity.id = "transaction-quantity-" + nextTransactionItemId++;
+    row.querySelectorAll("label")[0].htmlFor = item.id;
+    row.querySelectorAll("label")[1].htmlFor = quantity.id;
+    item.value = "";
+    quantity.value = "";
+    item.setCustomValidity("");
+    transactionItems.appendChild(row);
+    updateTransactionRemoveButtons();
+    clearTransactionFeedback();
+    item.focus();
+});
 
-    // Set initial form visibility
-    updateTransactionForm();
-}
-
+transactionItems.addEventListener("click", event => {
+    const button = event.target.closest(".remove-transaction-item");
+    if (button && transactionItems.children.length > 1) {
+        button.closest(".transaction-item-row").remove();
+        updateTransactionRemoveButtons();
+        clearTransactionFeedback();
+    }
+});
+transactionTypeSelect.addEventListener("change", updateTransactionForm);
+transactionForm.addEventListener("input", clearTransactionFeedback);
+transactionForm.addEventListener("change", clearTransactionFeedback);
+transactionForm.addEventListener("submit", event => {
+    event.preventDefault();
+    const seen = new Set();
+    let duplicate = null;
+    transactionItems.querySelectorAll("select").forEach(field => {
+        field.setCustomValidity("");
+        if (seen.has(field.value)) {
+            field.setCustomValidity("Select each variant once; combine its quantities in one row.");
+            duplicate = field;
+        }
+        seen.add(field.value);
+    });
+    if (duplicate) {
+        transactionFeedback.textContent = "Repeated item: combine its quantities in one row.";
+        duplicate.reportValidity();
+        return;
+    }
+    transactionFeedback.textContent = "Demo form checked. Nothing was saved. The backend will verify available stock and save the transaction.";
+});
+updateTransactionForm();
 
 /* ==============================
    CUSTOM GIVEAWAY FUNCTIONALITY

@@ -124,6 +124,11 @@ async function loadLiveData() {
         renderDashboardTable(rows);
     } catch (err) {
         console.error(err);
+        for (const id of ["stat-catalog", "stat-low", "stat-value"]) {
+            document.getElementById(id).textContent = "Unavailable";
+        }
+        document.getElementById("stat-low-detail").textContent = "Start the app server to load data";
+        document.getElementById("stat-value-detail").textContent = "Database connection required";
         const message = "Could not load inventory from the database. Please try again.";
         const a = document.getElementById("inventory-table-body");
         const b = document.getElementById("dashboard-table-body");
