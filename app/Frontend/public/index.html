@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>UH Inventory Management System</title>
+		<link rel="stylesheet" href="style.css">
+	</head>
+	<body>
+
+		<!-- Sidebar Navigation -->
+		<aside class="sidebar">
+			<div class="sidebar-header">
+				<h2>UH Inventory</h2>
+				<p>Government &amp; Community Relations</p>
+			</div>
+			<nav class="sidebar-nav" aria-label="Main navigation">
+				<a href="#dashboard" class="nav-link active">Dashboard</a>
+				<a href="#inventory" class="nav-link">Inventory</a>
+				<a href="#withdraw" class="nav-link">Stock Transactions</a>
+				<a href="#bundles" class="nav-link">Giveaway Combinations</a>
+				<a href="#reports" class="nav-link">Reports</a>
+			</nav>
+			<div class="sidebar-footer">
+				<p>University of Houston</p>
+			</div>
+		</aside>
+
+		<!-- Main Content -->
+		<main class="main-content">
+
+			<!-- Dashboard -->
+			<section id="dashboard" class="page active">
+				<h1>Dashboard</h1>
+				<p>Welcome to the UH Inventory Management System.</p>
+				<p class="demo-note">
+					Demo Preview — Inventory recount pending
+				</p>
+
+				<!-- Dashboard Summary Cards -->
+				<div class="stats-container">
+					<div class="stat-card">
+						<h3>Catalog Entries</h3>
+						<h2 id="stat-catalog">…</h2>
+						<p class="stat-detail">Including apparel variants</p>
+					</div>
+					<div class="stat-card">
+						<h3>Low-Stock Items</h3>
+						<h2 id="stat-low">…</h2>
+						<p class="stat-detail" id="stat-low-detail">Awaiting verified inventory</p>
+					</div>
+					<div class="stat-card">
+						<h3>Inventory Value</h3>
+						<h2 id="stat-value">…</h2>
+						<p class="stat-detail" id="stat-value-detail">Values not yet provided</p>
+					</div>
+				</div>
+
+				<!-- Inventory Overview -->
+				<div class="content-card">
+					<h2>Inventory Overview</h2>
+					<table>
+						<thead>
+							<tr>
+								<th scope="col">Item Name</th>
+								<th scope="col">Category</th>
+								<th scope="col">Quantity</th>
+								<th scope="col">Status</th>
+							</tr>
+						</thead>
+						<tbody id="dashboard-table-body">
+							<tr><td colspan="4">Loading inventory…</td></tr>
+						</tbody>
+					</table>
+				</div>
+			</section>
+
+			<!-- Inventory Page -->
+			<section id="inventory" class="page">
+				<h1>Inventory Management</h1>
+				<p>View and manage University of Houston merchandise.</p>
+				<p class="demo-note">
+					Historical inventory reference — physical recount pending
+				</p>
+				<div class="content-card">
+					<h2>Merchandise Inventory</h2>
+					<p style="margin-bottom: 20px;">
+						The quantities below are from the previous inventory workbook and have not been verified. Current inventory, setpoints, and item values will be established during implementation.
+					</p>
+					<table>
+						<thead>
+							<tr>
+								<th scope="col">Category</th>
+								<th scope="col">Item Name</th>
+								<th scope="col">Gender</th>
+								<th scope="col">Size</th>
+								<th scope="col">Old Qty.</th>
+								<th scope="col">Current Qty.</th>
+								<th scope="col">Setpoint</th>
+								<th scope="col">Unit Value</th>
+							</tr>
+						</thead>
+						<tbody id="inventory-table-body">
+							<tr><td colspan="8">Loading inventory…</td></tr>
+						</tbody>
+					</table>
+				</div>
+			</section>
+
+			<!-- Stock Transactions Page -->
+			<section id="withdraw" class="page">
+				<h1>Stock Transactions</h1>
+				<p>Record inventory additions and distributions.</p>
+				<p class="demo-note">
+					Form demonstration only — no transactions are saved
+				</p>
+				<div class="content-card">
+					<h2>Inventory Transaction Form</h2>
+					<form id="withdrawal-form">
+
+						<!-- Transaction Type -->
+						<div class="form-group">
+							<label for="transaction-type">Transaction Type</label>
+							<select id="transaction-type" required>
+								<option value="">-- Select Transaction Type --</option>
+								<option value="in">Stock In</option>
+								<option value="out">Stock Out</option>
+							</select>
+						</div>
+
+						<!-- First Item -->
+						<h3>Merchandise Items</h3>
+						<p style="margin-bottom: 20px;">
+							Select the merchandise and quantity involved in this transaction.
+						</p>
+						<div class="form-group">
+							<label for="transaction-item-1">Item 1</label>
+							<select id="transaction-item-1" required>
+								<option value="">-- Select an Item --</option>
+								<option value="tote">Red UH Tote Bags</option>
+								<option value="yeti">Black Can Yetis</option>
+								<option value="journal">Red Journals</option>
+								<option value="notebook">Red Notebooks</option>
+								<option value="cooler">Red Igloo Coolers</option>
+								<option value="polo-ladies-l">
+									Red UH Polos - Ladies / L
+								</option>
+								<option value="polo-males-xl">
+									Red UH Polos - Males / XL
+								</option>
+							</select>
+						</div>
+						<div class="form-group">
+							<label for="transaction-quantity-1">
+								Quantity
+							</label>
+							<input type="number" id="transaction-quantity-1" min="1" step="1" placeholder="Enter quantity" required>
+						</div>
+
+						<!-- Optional Second Item -->
+						<div class="form-group">
+							<label for="transaction-item-2">
+								Additional Item (Optional)
+							</label>
+							<select id="transaction-item-2">
+								<option value="">-- No Additional Item --</option>
+								<option value="tote">Red UH Tote Bags</option>
+								<option value="yeti">Black Can Yetis</option>
+								<option value="journal">Red Journals</option>
+								<option value="notebook">Red Notebooks</option>
+								<option value="cooler">Red Igloo Coolers</option>
+								<option value="polo-ladies-l">
+									Red UH Polos - Ladies / L
+								</option>
+								<option value="polo-males-xl">
+									Red UH Polos - Males / XL
+								</option>
+							</select>
+						</div>
+						<div class="form-group">
+							<label for="transaction-quantity-2">
+								Additional Item Quantity
+							</label>
+							<input type="number" id="transaction-quantity-2" min="1" step="1" placeholder="Enter quantity">
+						</div>
+
+						<!-- Transaction Information -->
+						<h3>Transaction Details</h3>
+						<div class="form-group">
+							<label for="transaction-user">Recorded By</label>
+							<input type="text" id="transaction-user" placeholder="Enter employee name" required>
+						</div>
+						<div class="form-group">
+							<label for="transaction-date">Date and Time</label>
+							<input type="datetime-local" id="transaction-date" required>
+						</div>
+
+						<!-- Distribution Details -->
+						<h3>Distribution Information</h3>
+						<p style="margin-bottom: 20px;">
+							Complete these fields for Stock Out transactions.
+						</p>
+						<div class="form-group">
+							<label for="distribution-category">
+								Distribution Category
+							</label>
+							<select id="distribution-category">
+								<option value="">-- Select Category --</option>
+								<option value="community-event">
+									Community Event / Donation
+								</option>
+								<option value="government">
+									Giveaway - Government Relations
+								</option>
+								<option value="community">
+									Giveaway - Community Relations
+								</option>
+								<option value="internal">
+									Internal Staff
+								</option>
+							</select>
+						</div>
+						<div class="form-group">
+							<label for="recipient-context">
+								Recipient Context
+							</label>
+							<select id="recipient-context">
+								<option value="">-- Select Recipient --</option>
+								<option value="external">External</option>
+								<option value="internal">
+									In-Network / Within UH
+								</option>
+							</select>
+						</div>
+						<div class="form-group">
+							<label for="transaction-purpose">
+								Event / Purpose
+							</label>
+							<input type="text" id="transaction-purpose" placeholder="e.g. Government Relations Meeting">
+						</div>
+						<div class="form-group">
+							<label for="transaction-notes">
+								Additional Notes
+							</label>
+							<textarea id="transaction-notes" rows="4" placeholder="Enter any additional details"></textarea>
+						</div>
+						<button type="button" class="btn-primary" disabled>
+							Submit Transaction
+						</button>
+					</form>
+				</div>
+			</section>
+
+			<!-- Common Giveaway Combinations Page -->
+			<section id="bundles" class="page">
+				<h1>Common Giveaway Combinations</h1>
+				<p>
+					Manage reusable merchandise combinations for university gifts and community outreach.
+				</p>
+				<p class="demo-note">
+					Demonstration only — combination management coming soon
+				</p>
+				<div class="content-card">
+					<div class="bundle-header">
+						<h2>Giveaway Options</h2>
+						<button type="button" class="btn-primary" disabled>
+							+ Save Combination
+						</button>
+					</div>
+					<div class="bundle-grid">
+
+						<!-- Example Combination -->
+						<div class="bundle-card">
+							<h3>Common Relationship Gift</h3>
+							<p class="bundle-description">
+								Example combination from the UH case study. Items and quantities can be customized.
+							</p>
+							<h4>Suggested Items</h4>
+							<ul class="bundle-items">
+								<li>
+									<span>Red UH Tote Bag</span>
+									<strong>1</strong>
+								</li>
+								<li>
+									<span>Black Can Yeti</span>
+									<strong>1</strong>
+								</li>
+								<li>
+									<span>Red Journal</span>
+									<strong>1</strong>
+								</li>
+								<li>
+									<span>Red Notebook</span>
+									<strong>1</strong>
+								</li>
+							</ul>
+							<div class="bundle-footer">
+								<span>Combination Type</span>
+								<strong>Editable Template</strong>
+							</div>
+							<button type="button" class="btn-primary" disabled>
+								Use Combination
+							</button>
+						</div>
+
+						<!-- Custom Giveaway Option -->
+						<div class="bundle-card">
+							<h3>Custom Giveaway</h3>
+							<p class="bundle-description">
+								Create a one-time giveaway by selecting your own merchandise and quantities.
+							</p>
+							<h4>Build a One-Time Giveaway</h4>
+							<p class="bundle-description">
+								Choose the items you want to distribute without using a saved giveaway template.
+							</p>
+							<button type="button" class="btn-primary" id="open-custom-giveaway" aria-controls="custom-giveaway-panel" aria-expanded="false">
+								+ Create Custom Giveaway
+							</button>
+						</div>
+					</div>
+
+					<!-- Custom Giveaway Form -->
+					<div id="custom-giveaway-panel" class="giveaway-form-panel" hidden>
+						<h2>Create Custom Giveaway</h2>
+						<p>
+							Select items and quantities for a one-time giveaway. This combination will not be saved as a template.
+						</p>
+						<form id="custom-giveaway-form">
+							<h3>Merchandise Items</h3>
+							<div id="giveaway-items">
+								<div class="giveaway-item-row">
+									<div class="form-group">
+										<label for="giveaway-item-1">Item</label>
+										<select id="giveaway-item-1" name="item[]" required>
+											<option value="">-- Select Item --</option>
+											<option value="tote">Red UH Tote Bags</option>
+											<option value="yeti">Black Can Yetis</option>
+											<option value="journal">Red Journals</option>
+											<option value="notebook">Red Notebooks</option>
+											<option value="cooler">Red Igloo Coolers</option>
+											<option value="polo-ladies-l">
+												Red UH Polos - Ladies / L
+											</option>
+										</select>
+									</div>
+									<div class="form-group">
+										<label for="giveaway-quantity-1">Quantity</label>
+										<input type="number" id="giveaway-quantity-1" name="quantity[]" min="1" step="1" value="1" required>
+									</div>
+									<button type="button" class="remove-giveaway-item" disabled>
+										Remove
+									</button>
+								</div>
+							</div>
+							<button type="button" id="add-giveaway-item" class="btn-secondary">
+								+ Add Another Item
+							</button>
+							<h3>Distribution Information</h3>
+							<div class="form-group">
+								<label for="giveaway-category">Distribution Category</label>
+								<select id="giveaway-category" required>
+									<option value="">-- Select Category --</option>
+									<option value="government">
+										Giveaway - Government Relations
+									</option>
+									<option value="community">
+										Giveaway - Community Relations
+									</option>
+									<option value="event">
+										Community Event / Donation
+									</option>
+									<option value="staff">Internal Staff</option>
+								</select>
+							</div>
+							<div class="form-group">
+								<label for="giveaway-recipient">Recipient Context</label>
+								<select id="giveaway-recipient" required>
+									<option value="">-- Select Recipient --</option>
+									<option value="external">External</option>
+									<option value="within-uh">
+										In-Network / Within UH
+									</option>
+								</select>
+							</div>
+							<div class="form-group">
+								<label for="giveaway-purpose">Event / Purpose</label>
+								<input type="text" id="giveaway-purpose" placeholder="e.g. Community Outreach Event" required>
+							</div>
+							<div class="form-group">
+								<label for="giveaway-notes">Additional Notes</label>
+								<textarea id="giveaway-notes" rows="3" placeholder="Optional notes"></textarea>
+							</div>
+							<button type="button" class="btn-primary" disabled>
+								Submit Giveaway
+							</button>
+							<button type="button" id="cancel-custom-giveaway" class="btn-secondary">
+								Cancel
+							</button>
+						</form>
+					</div>
+				</div>
+			</section>
+
+			<!-- Reports Page -->
+			<section id="reports" class="page">
+				<h1>Inventory Reports</h1>
+				<p>View inventory reports and operational insights.</p>
+				<p class="demo-note">
+					Report functionality coming soon
+				</p>
+				<div class="content-card">
+					<h2>Available Reports</h2>
+					<div class="reports-grid">
+
+						<!-- Current Inventory -->
+						<div class="report-card">
+							<h3>Current Inventory Report</h3>
+							<p>
+								View merchandise items, variants, current quantities, setpoints, and available monetary values.
+							</p>
+							<span class="report-status">Coming Soon</span>
+						</div>
+
+						<!-- Low Inventory -->
+						<div class="report-card">
+							<h3>Low Inventory / Restock Report</h3>
+							<p>
+								Identify items at or below their setpoints and review inventory levels and alert statuses.
+							</p>
+							<span class="report-status">Coming Soon</span>
+						</div>
+
+						<!-- Inventory Usage -->
+						<div class="report-card">
+							<h3>Inventory Usage Report</h3>
+							<p>
+								Track merchandise distributed during selected periods, including quantities and usage by category.
+							</p>
+							<span class="report-status">Coming Soon</span>
+						</div>
+
+						<!-- Inventory Value -->
+						<div class="report-card">
+							<h3>Inventory Value Report</h3>
+							<p>
+								Review inventory quantities and total values for items with available monetary information.
+							</p>
+							<span class="report-status">Coming Soon</span>
+						</div>
+
+						<!-- Transaction History -->
+						<div class="report-card">
+							<h3>Transaction History Report</h3>
+							<p>
+								Review Stock In and Stock Out history, including dates, users, merchandise, quantities, and transaction details.
+							</p>
+							<span class="report-status">Coming Soon</span>
+						</div>
+
+						<!-- Giveaway Report -->
+						<div class="report-card">
+							<h3>Giveaway / Relationship Gift Report</h3>
+							<p>
+								Review merchandise distributed together, recipient context, distribution category, event details, and quantities.
+							</p>
+							<span class="report-status">Coming Soon</span>
+						</div>
+
+						<!-- Forecasting -->
+						<div class="report-card">
+							<h3>Demand / Forecasting Report</h3>
+							<p>
+								Analyze historical merchandise usage to identify frequently distributed items and potential replenishment needs.
+							</p>
+							<span class="report-status">Coming Soon</span>
+						</div>
+					</div>
+				</div>
+			</section>
+		</main>
+		<script src="script.js"></script>
+		<script src="data.js"></script>
+	</body>
+</html>
