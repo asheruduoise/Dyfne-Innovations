@@ -12,6 +12,6 @@
     "dotenv": "^18.0.9",
     "express": "^4.22.3",
     "mysql2": "^3.24.6",
-    "nodemailer": "^6.9.16"
+    "nodemailer": "^10.4.0"
   }
 }
