@@ -11,54 +11,59 @@
 		<!-- Sidebar Navigation -->
 		<aside class="sidebar">
 			<div class="sidebar-header">
-				<h2>UH Inventory</h2>
-				<p>Government &amp; Community Relations</p>
+				<div class="brand-lockup"><span class="brand-mark" aria-hidden="true">UH</span><div><h2>Inventory</h2><span class="brand-subtitle">UNIVERSITY OF HOUSTON</span></div></div>
+                <p>Government &amp;<br>Community Relations</p>
 			</div>
-			<nav class="sidebar-nav" aria-label="Main navigation">
-				<a href="#dashboard" class="nav-link active">Dashboard</a>
-				<a href="#inventory" class="nav-link">Inventory</a>
-				<a href="#withdraw" class="nav-link">Stock Transactions</a>
-				<a href="#bundles" class="nav-link">Giveaway Combinations</a>
-				<a href="#reports" class="nav-link">Reports</a>
-			</nav>
+			<p class="nav-label">WORKSPACE</p>
+            <nav class="sidebar-nav" aria-label="Main navigation">
+				<a href="#dashboard" class="nav-link active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg><span>Dashboard</span></a>
+				<a href="#inventory" class="nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 3 9 5-9 5-9-5 9-5Z"/><path d="M3 8v9l9 5 9-5V8M12 13v9M7.5 5.5l9 5"/></svg><span>Inventory</span></a>
+				<a href="#withdraw" class="nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h15m-4-4 4 4-4 4M20 17H5m4-4-4 4 4 4"/></svg><span>Stock Transactions</span></a>
+				<a href="#bundles" class="nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M5 12v9h14v-9M12 8v13M12 8H8a3 3 0 1 1 3-3l1 3Zm0 0h4a3 3 0 1 0-3-3l-1 3Z"/></svg><span>Giveaway Combinations</span></a>
+				<a href="#reports" class="nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3h10l4 4v14H5V3Zm10 0v5h4M8 17v-3m4 3v-6m4 6v-4"/></svg><span>Reports</span></a>
+			<a href="#alerts" class="nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 6 9 7 9-7"/></svg><span>Email Alerts</span></a>
+            </nav>
 			<div class="sidebar-footer">
-				<p>University of Houston</p>
+				<span class="footer-monogram" aria-hidden="true">GCR</span><div><strong>GCR inventory</strong><p>Internal workspace</p></div>
 			</div>
 		</aside>
 
 		<!-- Main Content -->
 		<main class="main-content">
+            <header class="workspace-bar"><span>GCR <span class="breadcrumb-slash">/</span> Inventory workspace</span><span class="environment-tag">Development preview</span></header>
+            <div class="page-container">
 
 			<!-- Dashboard -->
 			<section id="dashboard" class="page active">
-				<h1>Dashboard</h1>
-				<p>Welcome to the UH Inventory Management System.</p>
+				<p class="eyebrow">WORKSPACE OVERVIEW</p><h1>Dashboard</h1>
+				<p>A clear view of your merchandise, stock levels, and daily activity.</p>
 				<p class="demo-note">
-					Demo Preview — Inventory recount pending
+					Summary uses your connected inventory database.
 				</p>
 
-				<!-- Dashboard Summary Cards -->
+				<div class="dashboard-actions"><a href="#withdraw" class="btn-primary">+ Record a transaction</a><a href="#inventory" class="text-link">View inventory <span aria-hidden="true">↗</span></a></div>
+                <!-- Dashboard Summary Cards -->
 				<div class="stats-container">
 					<div class="stat-card">
-						<h3>Catalog Entries</h3>
-						<h2>28</h2>
+						<div class="stat-heading"><h3>Catalog Entries</h3><span class="stat-icon neutral"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 3 9 5-9 5-9-5 9-5Z"/><path d="M3 8v9l9 5 9-5V8M12 13v9M7.5 5.5l9 5"/></svg></span></div>
+						<h2 id="stat-catalog">…</h2>
 						<p class="stat-detail">Including apparel variants</p>
 					</div>
 					<div class="stat-card">
-						<h3>Low-Stock Items</h3>
-						<h2>Pending</h2>
-						<p class="stat-detail">Awaiting verified inventory</p>
+						<div class="stat-heading"><h3>Low-Stock Items</h3><span class="stat-icon amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h15m-4-4 4 4-4 4M20 17H5m4-4-4 4 4 4"/></svg></span></div>
+						<h2 id="stat-low">…</h2>
+						<p class="stat-detail" id="stat-low-detail">Loading stock summary…</p>
 					</div>
 					<div class="stat-card">
-						<h3>Inventory Value</h3>
-						<h2>Unknown</h2>
-						<p class="stat-detail">Values not yet provided</p>
+						<div class="stat-heading"><h3>Inventory Value</h3><span class="stat-icon red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3h10l4 4v14H5V3Zm10 0v5h4M8 17v-3m4 3v-6m4 6v-4"/></svg></span></div>
+						<h2 id="stat-value">…</h2>
+						<p class="stat-detail" id="stat-value-detail">Values not yet provided</p>
 					</div>
 				</div>
 
 				<!-- Inventory Overview -->
 				<div class="content-card">
-					<h2>Inventory Overview</h2>
+					<div class="section-heading"><div><h2>Inventory overview</h2><p>Items needing attention appear first.</p></div><a href="#inventory" class="text-link">View all <span aria-hidden="true">→</span></a></div>
 					<table>
 						<thead>
 							<tr>
@@ -68,47 +73,8 @@
 								<th scope="col">Status</th>
 							</tr>
 						</thead>
-						<tbody>
-							<tr>
-								<td>Red UH Tote Bags</td>
-								<td>Bags &amp; Totes</td>
-								<td>—</td>
-								<td>
-									<span class="status pending">
-										Not Verified
-									</span>
-								</td>
-							</tr>
-							<tr>
-								<td>Black Can Yetis</td>
-								<td>Drinkware</td>
-								<td>—</td>
-								<td>
-									<span class="status pending">
-										Not Verified
-									</span>
-								</td>
-							</tr>
-							<tr>
-								<td>Red Journals</td>
-								<td>Office Supplies &amp; Stationery</td>
-								<td>—</td>
-								<td>
-									<span class="status pending">
-										Not Verified
-									</span>
-								</td>
-							</tr>
-							<tr>
-								<td>Red UH Polos (Ladies / L)</td>
-								<td>Apparel</td>
-								<td>—</td>
-								<td>
-									<span class="status pending">
-										Not Verified
-									</span>
-								</td>
-							</tr>
+						<tbody id="dashboard-table-body">
+							<tr><td colspan="4">Loading inventory…</td></tr>
 						</tbody>
 					</table>
 				</div>
@@ -116,15 +82,15 @@
 
 			<!-- Inventory Page -->
 			<section id="inventory" class="page">
-				<h1>Inventory Management</h1>
+				<p class="eyebrow">YOUR MERCHANDISE</p><h1>Inventory</h1>
 				<p>View and manage University of Houston merchandise.</p>
 				<p class="demo-note">
-					Historical inventory reference — physical recount pending
+					Database inventory · Opening counts may still need verification.
 				</p>
 				<div class="content-card">
-					<h2>Merchandise Inventory</h2>
+					<h2>Merchandise inventory</h2>
 					<p style="margin-bottom: 20px;">
-						The quantities below are from the previous inventory workbook and have not been verified. Current inventory, setpoints, and item values will be established during implementation.
+						Current quantities and setpoints come from the database. Baseline Qty. is the recorded opening count; a dash means it has not been recorded. A missing unit value means it has not been provided.
 					</p>
 					<table>
 						<thead>
@@ -133,307 +99,14 @@
 								<th scope="col">Item Name</th>
 								<th scope="col">Gender</th>
 								<th scope="col">Size</th>
-								<th scope="col">Old Qty.</th>
+								<th scope="col">Baseline Qty.</th>
 								<th scope="col">Current Qty.</th>
 								<th scope="col">Setpoint</th>
 								<th scope="col">Unit Value</th>
 							</tr>
 						</thead>
-						<tbody>
-
-							<!-- Accessories & Gear -->
-							<tr>
-								<td>Accessories &amp; Gear</td>
-								<td>Red Igloo Coolers</td>
-								<td>—</td>
-								<td>—</td>
-								<td>3</td>
-								<td>—</td>
-								<td>—</td>
-								<td>—</td>
-							</tr>
-							<tr>
-								<td>Accessories &amp; Gear</td>
-								<td>UH Belt Buckles</td>
-								<td>—</td>
-								<td>—</td>
-								<td>64</td>
-								<td>—</td>
-								<td>—</td>
-								<td>—</td>
-							</tr>
-							<tr>
-								<td>Accessories &amp; Gear</td>
-								<td>Umbrellas</td>
-								<td>—</td>
-								<td>—</td>
-								<td>6</td>
-								<td>—</td>
-								<td>—</td>
-								<td>—</td>
-							</tr>
-
-							<!-- Apparel: Black Jackets -->
-							<tr>
-								<td>Apparel</td>
-								<td>Black Jackets</td>
-								<td>—</td>
-								<td>XS</td>
-								<td>3</td>
-								<td>—</td>
-								<td>—</td>
-								<td>—</td>
-							</tr>
-							<tr>
-								<td>Apparel</td>
-								<td>Black Jackets</td>
-								<td>—</td>
-								<td>XXL</td>
-								<td>2</td>
-								<td>—</td>
-								<td>—</td>
-								<td>—</td>
-							</tr>
-							<tr>
-								<td>Apparel</td>
-								<td>Black Jackets</td>
-								<td>—</td>
-								<td>XXXL</td>
-								<td>1</td>
-								<td>—</td>
-								<td>—</td>
-								<td>—</td>
-							</tr>
-							<tr>
-								<td>Apparel</td>
-								<td>Black Jackets</td>
-								<td>Ladies</td>
-								<td>L</td>
-								<td>1</td>
-								<td>—</td>
-								<td>—</td>
-								<td>—</td>
-							</tr>
-							<tr>
-								<td>Apparel</td>
-								<td>Black Jackets</td>
-								<td>Ladies</td>
-								<td>S</td>
-								<td>1</td>
-								<td>—</td>
-								<td>—</td>
-								<td>—</td>
-							</tr>
-							<tr>
-								<td>Apparel</td>
-								<td>Black Jackets</td>
-								<td>Males</td>
-								<td>M</td>
-								<td>2</td>
-								<td>—</td>
-								<td>—</td>
-								<td>—</td>
-							</tr>
-
-							<!-- Apparel: Red UH Polos -->
-							<tr>
-								<td>Apparel</td>
-								<td>Red UH Polos</td>
-								<td>Ladies</td>
-								<td>L</td>
-								<td>4</td>
-								<td>—</td>
-								<td>—</td>
-								<td>—</td>
-							</tr>
-							<tr>
-								<td>Apparel</td>
-								<td>Red UH Polos</td>
-								<td>Ladies</td>
-								<td>M</td>
-								<td>1</td>
-								<td>—</td>
-								<td>—</td>
-								<td>—</td>
-							</tr>
-							<tr>
-								<td>Apparel</td>
-								<td>Red UH Polos</td>
-								<td>Ladies</td>
-								<td>S</td>
-								<td>2</td>
-								<td>—</td>
-								<td>—</td>
-								<td>—</td>
-							</tr>
-							<tr>
-								<td>Apparel</td>
-								<td>Red UH Polos</td>
-								<td>Ladies</td>
-								<td>XL</td>
-								<td>4</td>
-								<td>—</td>
-								<td>—</td>
-								<td>—</td>
-							</tr>
-							<tr>
-								<td>Apparel</td>
-								<td>Red UH Polos</td>
-								<td>Ladies</td>
-								<td>XXL</td>
-								<td>3</td>
-								<td>—</td>
-								<td>—</td>
-								<td>—</td>
-							</tr>
-							<tr>
-								<td>Apparel</td>
-								<td>Red UH Polos</td>
-								<td>Males</td>
-								<td>L</td>
-								<td>5</td>
-								<td>—</td>
-								<td>—</td>
-								<td>—</td>
-							</tr>
-							<tr>
-								<td>Apparel</td>
-								<td>Red UH Polos</td>
-								<td>Males</td>
-								<td>M</td>
-								<td>3</td>
-								<td>—</td>
-								<td>—</td>
-								<td>—</td>
-							</tr>
-							<tr>
-								<td>Apparel</td>
-								<td>Red UH Polos</td>
-								<td>Males</td>
-								<td>S</td>
-								<td>3</td>
-								<td>—</td>
-								<td>—</td>
-								<td>—</td>
-							</tr>
-							<tr>
-								<td>Apparel</td>
-								<td>Red UH Polos</td>
-								<td>Males</td>
-								<td>XL</td>
-								<td>5</td>
-								<td>—</td>
-								<td>—</td>
-								<td>—</td>
-							</tr>
-							<tr>
-								<td>Apparel</td>
-								<td>Red UH Polos</td>
-								<td>Males</td>
-								<td>XXL</td>
-								<td>2</td>
-								<td>—</td>
-								<td>—</td>
-								<td>—</td>
-							</tr>
-
-							<!-- Apparel: UH Vests -->
-							<tr>
-								<td>Apparel</td>
-								<td>UH Vests</td>
-								<td>—</td>
-								<td>L</td>
-								<td>4</td>
-								<td>—</td>
-								<td>—</td>
-								<td>—</td>
-							</tr>
-							<tr>
-								<td>Apparel</td>
-								<td>UH Vests</td>
-								<td>—</td>
-								<td>M</td>
-								<td>4</td>
-								<td>—</td>
-								<td>—</td>
-								<td>—</td>
-							</tr>
-							<tr>
-								<td>Apparel</td>
-								<td>UH Vests</td>
-								<td>—</td>
-								<td>S</td>
-								<td>3</td>
-								<td>—</td>
-								<td>—</td>
-								<td>—</td>
-							</tr>
-
-							<!-- Bags & Totes -->
-							<tr>
-								<td>Bags &amp; Totes</td>
-								<td>Red UH Tote Bags</td>
-								<td>—</td>
-								<td>—</td>
-								<td>186</td>
-								<td>—</td>
-								<td>—</td>
-								<td>—</td>
-							</tr>
-
-							<!-- Drinkware -->
-							<tr>
-								<td>Drinkware</td>
-								<td>Black Can Yetis</td>
-								<td>—</td>
-								<td>—</td>
-								<td>23</td>
-								<td>—</td>
-								<td>—</td>
-								<td>—</td>
-							</tr>
-							<tr>
-								<td>Drinkware</td>
-								<td>Red Plastic Water Bottles</td>
-								<td>—</td>
-								<td>—</td>
-								<td>42</td>
-								<td>—</td>
-								<td>—</td>
-								<td>—</td>
-							</tr>
-
-							<!-- Office Supplies & Stationery -->
-							<tr>
-								<td>Office Supplies &amp; Stationery</td>
-								<td>Red Folders</td>
-								<td>—</td>
-								<td>—</td>
-								<td>496</td>
-								<td>—</td>
-								<td>—</td>
-								<td>—</td>
-							</tr>
-							<tr>
-								<td>Office Supplies &amp; Stationery</td>
-								<td>Red Journals</td>
-								<td>—</td>
-								<td>—</td>
-								<td>130</td>
-								<td>—</td>
-								<td>—</td>
-								<td>—</td>
-							</tr>
-							<tr>
-								<td>Office Supplies &amp; Stationery</td>
-								<td>Red Notebooks</td>
-								<td>—</td>
-								<td>—</td>
-								<td>583</td>
-								<td>—</td>
-								<td>—</td>
-								<td>—</td>
-							</tr>
+						<tbody id="inventory-table-body">
+							<tr><td colspan="8">Loading inventory…</td></tr>
 						</tbody>
 					</table>
 				</div>
@@ -441,13 +114,13 @@
 
 			<!-- Stock Transactions Page -->
 			<section id="withdraw" class="page">
-				<h1>Stock Transactions</h1>
+				<p class="eyebrow">INVENTORY MOVEMENTS</p><h1>Stock transactions</h1>
 				<p>Record inventory additions and distributions.</p>
 				<p class="demo-note">
-					Form demonstration only — no transactions are saved
+					Form preview · Check entries without saving a transaction.
 				</p>
 				<div class="content-card">
-					<h2>Inventory Transaction Form</h2>
+					<h2>Record a stock movement</h2>
 					<form id="withdrawal-form">
 
 						<!-- Transaction Type -->
@@ -460,14 +133,23 @@
 							</select>
 						</div>
 
-						<!-- First Item -->
-						<h3>Merchandise Items</h3>
-						<p style="margin-bottom: 20px;">
-							Select the merchandise and quantity involved in this transaction.
-						</p>
-						<div class="form-group">
-							<label for="transaction-item-1">Item 1</label>
-							<select id="transaction-item-1" required>
+
+                        <div class="form-group" id="stock-in-reason-group" hidden>
+                            <label for="stock-in-reason">Stock In Reason</label>
+                            <select id="stock-in-reason" disabled>
+                                <option value="">-- Select Reason --</option>
+                                <option value="Received">Received</option>
+                                <option value="Returned">Returned</option>
+                                <option value="Adjustment">Adjustment</option>
+                            </select>
+                        </div>
+                        <h3>Merchandise Items</h3>
+                        <p>Select each item variant once. Quantities must be positive whole numbers.</p>
+                        <div id="transaction-items">
+                            <div class="transaction-item-row">
+                                <div class="form-group">
+                                    <label for="transaction-item-1">Item / Variant</label>
+                                    <select id="transaction-item-1" name="variant[]" required>
 								<option value="">-- Select an Item --</option>
 								<option value="tote">Red UH Tote Bags</option>
 								<option value="yeti">Black Can Yetis</option>
@@ -481,50 +163,25 @@
 									Red UH Polos - Males / XL
 								</option>
 							</select>
-						</div>
-						<div class="form-group">
-							<label for="transaction-quantity-1">
-								Quantity
-							</label>
-							<input type="number" id="transaction-quantity-1" min="1" step="1" placeholder="Enter quantity" required>
-						</div>
-
-						<!-- Optional Second Item -->
-						<div class="form-group">
-							<label for="transaction-item-2">
-								Additional Item (Optional)
-							</label>
-							<select id="transaction-item-2">
-								<option value="">-- No Additional Item --</option>
-								<option value="tote">Red UH Tote Bags</option>
-								<option value="yeti">Black Can Yetis</option>
-								<option value="journal">Red Journals</option>
-								<option value="notebook">Red Notebooks</option>
-								<option value="cooler">Red Igloo Coolers</option>
-								<option value="polo-ladies-l">
-									Red UH Polos - Ladies / L
-								</option>
-								<option value="polo-males-xl">
-									Red UH Polos - Males / XL
-								</option>
-							</select>
-						</div>
-						<div class="form-group">
-							<label for="transaction-quantity-2">
-								Additional Item Quantity
-							</label>
-							<input type="number" id="transaction-quantity-2" min="1" step="1" placeholder="Enter quantity">
-						</div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="transaction-quantity-1">Quantity</label>
+                                    <input type="number" id="transaction-quantity-1" name="quantity[]" min="1" step="1" required>
+                                </div>
+                                <button type="button" class="btn-secondary remove-transaction-item" disabled>Remove</button>
+                            </div>
+                        </div>
+                        <button type="button" class="btn-secondary" id="add-transaction-item">+ Add Another Item</button>
 
 						<!-- Transaction Information -->
 						<h3>Transaction Details</h3>
 						<div class="form-group">
 							<label for="transaction-user">Recorded By</label>
-							<input type="text" id="transaction-user" placeholder="Enter employee name" required>
+							<input type="text" id="transaction-user" value="Assigned after sign-in" readonly>
 						</div>
 						<div class="form-group">
 							<label for="transaction-date">Date and Time</label>
-							<input type="datetime-local" id="transaction-date" required>
+							<input type="text" id="transaction-date" value="Assigned when saved" readonly>
 						</div>
 
 						<!-- Distribution Details -->
@@ -550,7 +207,7 @@
 								<option value="internal">
 									Internal Staff
 								</option>
-							</select>
+							<option value="adjustment">Other / Inventory Adjustment</option></select>
 						</div>
 						<div class="form-group">
 							<label for="recipient-context">
@@ -562,35 +219,34 @@
 								<option value="internal">
 									In-Network / Within UH
 								</option>
-							</select>
+							<option value="not-applicable">Not Applicable</option></select>
 						</div>
 						<div class="form-group">
 							<label for="transaction-purpose">
 								Event / Purpose
 							</label>
-							<input type="text" id="transaction-purpose" placeholder="e.g. Government Relations Meeting">
+							<input type="text" id="transaction-purpose" maxlength="255" placeholder="e.g. Government Relations Meeting">
 						</div>
 						<div class="form-group">
 							<label for="transaction-notes">
 								Additional Notes
 							</label>
-							<textarea id="transaction-notes" rows="4" placeholder="Enter any additional details"></textarea>
+							<textarea id="transaction-notes" maxlength="1000" rows="4" placeholder="Enter any additional details"></textarea>
 						</div>
-						<button type="button" class="btn-primary" disabled>
-							Submit Transaction
-						</button>
+						<button type="submit" class="btn-primary">Check Demo Form</button>
+                        <p id="transaction-feedback" role="status" aria-live="polite"></p>
 					</form>
 				</div>
 			</section>
 
 			<!-- Common Giveaway Combinations Page -->
 			<section id="bundles" class="page">
-				<h1>Common Giveaway Combinations</h1>
+				<p class="eyebrow">GIFTING & OUTREACH</p><h1>Giveaway combinations</h1>
 				<p>
 					Manage reusable merchandise combinations for university gifts and community outreach.
 				</p>
 				<p class="demo-note">
-					Demonstration only — combination management coming soon
+					Template preview · Saving and distribution are not connected yet.
 				</p>
 				<div class="content-card">
 					<div class="bundle-header">
@@ -702,7 +358,7 @@
 										Community Event / Donation
 									</option>
 									<option value="staff">Internal Staff</option>
-								</select>
+								<option value="adjustment">Other / Inventory Adjustment</option></select>
 							</div>
 							<div class="form-group">
 								<label for="giveaway-recipient">Recipient Context</label>
@@ -712,7 +368,7 @@
 									<option value="within-uh">
 										In-Network / Within UH
 									</option>
-								</select>
+								<option value="not-applicable">Not Applicable</option></select>
 							</div>
 							<div class="form-group">
 								<label for="giveaway-purpose">Event / Purpose</label>
@@ -720,7 +376,7 @@
 							</div>
 							<div class="form-group">
 								<label for="giveaway-notes">Additional Notes</label>
-								<textarea id="giveaway-notes" rows="3" placeholder="Optional notes"></textarea>
+								<textarea id="giveaway-notes" maxlength="1000" rows="3" placeholder="Optional notes"></textarea>
 							</div>
 							<button type="button" class="btn-primary" disabled>
 								Submit Giveaway
@@ -734,11 +390,51 @@
 			</section>
 
 			<!-- Reports Page -->
-			<section id="reports" class="page">
-				<h1>Inventory Reports</h1>
+			            <section id="alerts" class="page">
+                <p class="eyebrow">NOTIFICATIONS</p>
+                <h1>Email alerts</h1>
+                <p>Keep your team informed when merchandise needs restocking.</p>
+                <p class="demo-note">Manage one shared list of up to three recipients.</p>
+                <div id="alerts-connection" class="alerts-notice" role="status">Checking whether alert settings are connected…</div>
+                <div class="alerts-layout">
+                    <div class="content-card">
+                        <div class="section-heading"><div><h2>Alert recipients</h2><p>Add a colleague, update an address, or remove someone who has left.</p></div><span id="recipient-count" class="report-status">0 / 3</span></div>
+                        <form id="alert-recipients-form">
+                            <div id="alert-recipient-rows"></div>
+                            <p id="recipients-empty" class="alerts-empty">No recipients in this draft. Add an email address to get started.</p>
+                            <button type="button" id="add-alert-recipient" class="btn-secondary">+ Add recipient</button>
+                            <p class="alerts-help">Recipients receive the same low-stock alerts. Enter email addresses only—no email passwords are needed.</p>
+                            <div class="alerts-form-actions">
+                                <button type="submit" id="save-alert-recipients" class="btn-primary" disabled>Save changes</button>
+                                <button type="button" id="check-alert-recipients" class="btn-secondary">Check list</button>
+                            </div>
+                            <p id="alert-recipients-feedback" role="status" aria-live="polite"></p>
+                        </form>
+                    </div>
+                    <div class="content-card alerts-explainer">
+                        <h2>How alerts work</h2>
+                        <ol><li>Stock reaches or falls below its restock threshold.</li><li>The system creates a pending alert.</li><li>The email service sends a notification to the saved recipients.</li></ol>
+                        <p>Editing this draft does not send an email. Delivery needs the connected backend and a configured sender account.</p>
+                    </div>
+                </div>
+                <div class="content-card">
+                    <div class="section-heading"><div><h2>Email preview</h2><p>Sample content only. This preview does not send a message.</p></div><span class="report-status">Sample email</span></div>
+                    <div class="email-envelope"><p><strong>From</strong> GCR Inventory Alerts <span>(sender account to be configured)</span></p><p><strong>To</strong> <span id="alert-preview-to">Your saved recipients</span></p><p><strong>Subject</strong> UH Inventory — Low stock: Red UH Tote Bag</p></div>
+                    <article class="alert-email-preview" aria-label="Sample low-stock email">
+                        <div class="email-brand">UH <span>GCR INVENTORY</span></div>
+                        <div class="email-content"><p class="eyebrow">INVENTORY NOTIFICATION</p><h2>Time to review your stock.</h2><p>One of your inventory items has reached its restock threshold.</p>
+                            <dl><div><dt>Item</dt><dd>Red UH Tote Bag</dd></div><div><dt>Variant</dt><dd>Standard</dd></div><div><dt>Current quantity</dt><dd>12 units</dd></div><div><dt>Restock threshold</dt><dd>20 units</dd></div></dl>
+                            <p>Please open the inventory system and review this item for replenishment.</p><p class="email-caption">Automated low-stock notification. Contact your inventory team to update the recipient list.</p>
+                        </div>
+                    </article>
+                </div>
+            </section>
+
+            <section id="reports" class="page">
+				<p class="eyebrow">INSIGHTS & ACTIVITY</p><h1>Reports</h1>
 				<p>View inventory reports and operational insights.</p>
 				<p class="demo-note">
-					Report functionality coming soon
+					Report preview · Live reports are not connected yet.
 				</p>
 				<div class="content-card">
 					<h2>Available Reports</h2>
@@ -809,7 +505,10 @@
 					</div>
 				</div>
 			</section>
-		</main>
+		</div>
+        </main>
 		<script src="script.js"></script>
+		<script src="data.js"></script>
+        <script src="alerts.js"></script>
 	</body>
 </html>
