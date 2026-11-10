@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>UH Inventory Management System</title>
+		<link rel="stylesheet" href="style.css">
+	</head>
+	<body>
+
+		<!-- Sidebar Navigation -->
+		<aside class="sidebar">
+			<div class="sidebar-header">
+				<div class="brand-lockup"><span class="brand-mark" aria-hidden="true">UH</span><div><h2>Inventory</h2><span class="brand-subtitle">UNIVERSITY OF HOUSTON</span></div></div>
+                <p>Government &amp;<br>Community Relations</p>
+			</div>
+			<p class="nav-label">WORKSPACE</p>
+            <nav class="sidebar-nav" aria-label="Main navigation">
+				<a href="#dashboard" class="nav-link active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg><span>Dashboard</span></a>
+				<a href="#inventory" class="nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 3 9 5-9 5-9-5 9-5Z"/><path d="M3 8v9l9 5 9-5V8M12 13v9M7.5 5.5l9 5"/></svg><span>Inventory</span></a>
+				<a href="#withdraw" class="nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h15m-4-4 4 4-4 4M20 17H5m4-4-4 4 4 4"/></svg><span>Stock Transactions</span></a>
+				<a href="#bundles" class="nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M5 12v9h14v-9M12 8v13M12 8H8a3 3 0 1 1 3-3l1 3Zm0 0h4a3 3 0 1 0-3-3l-1 3Z"/></svg><span>Giveaway Combinations</span></a>
+				<a href="#reports" class="nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3h10l4 4v14H5V3Zm10 0v5h4M8 17v-3m4 3v-6m4 6v-4"/></svg><span>Reports</span></a>
+			<a href="#alerts" class="nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 6 9 7 9-7"/></svg><span>Email Alerts</span></a>
+				<a href="#staff" class="nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M18 14.5a6.5 6.5 0 0 1 3.5 5.5"/></svg><span>Staff</span></a>
+            </nav>
+			<div class="sidebar-footer">
+				<span class="footer-monogram" aria-hidden="true">GCR</span><div><strong>GCR inventory</strong><p>Internal workspace</p></div>
+			</div>
+		</aside>
+
+		<!-- Main Content -->
+		<main class="main-content">
+            <header class="workspace-bar"><span>GCR <span class="breadcrumb-slash">/</span> Inventory workspace</span><label class="staff-picker" for="current-staff"><span>Working as</span><select id="current-staff"><option value="">Loading staff…</option></select></label></header>
+            <div class="page-container">
+            <div id="setup-banner" class="setup-banner" role="status" hidden></div>
+
+			<!-- Dashboard -->
+			<section id="dashboard" class="page active">
+				<p class="eyebrow">WORKSPACE OVERVIEW</p><h1>Dashboard</h1>
+				<p>A clear view of your merchandise, stock levels, and daily activity.</p>
+				<p class="demo-note">
+					Live data from the inventory database.
+				</p>
+
+				<div class="dashboard-actions"><a href="#withdraw" class="btn-primary">+ Record a transaction</a><a href="#inventory" class="text-link">View inventory <span aria-hidden="true">↗</span></a></div>
+                <!-- Dashboard Summary Cards -->
+				<div class="stats-container">
+					<div class="stat-card">
+						<div class="stat-heading"><h3>Catalog Entries</h3><span class="stat-icon neutral"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 3 9 5-9 5-9-5 9-5Z"/><path d="M3 8v9l9 5 9-5V8M12 13v9M7.5 5.5l9 5"/></svg></span></div>
+						<h2 id="stat-catalog">…</h2>
+						<p class="stat-detail">Including apparel variants</p>
+					</div>
+					<div class="stat-card">
+						<div class="stat-heading"><h3>Low-Stock Items</h3><span class="stat-icon amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h15m-4-4 4 4-4 4M20 17H5m4-4-4 4 4 4"/></svg></span></div>
+						<h2 id="stat-low">…</h2>
+						<p class="stat-detail" id="stat-low-detail">Loading stock summary…</p>
+					</div>
+					<div class="stat-card">
+						<div class="stat-heading"><h3>Inventory Value</h3><span class="stat-icon red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3h10l4 4v14H5V3Zm10 0v5h4M8 17v-3m4 3v-6m4 6v-4"/></svg></span></div>
+						<h2 id="stat-value">…</h2>
+						<p class="stat-detail" id="stat-value-detail">Values not yet provided</p>
+					</div>
+				</div>
+
+				<!-- Inventory Overview -->
+				<div class="content-card">
+					<div class="section-heading"><div><h2>Inventory overview</h2><p>Items needing attention appear first.</p></div><a href="#inventory" class="text-link">View all <span aria-hidden="true">→</span></a></div>
+					<table>
+						<thead>
+							<tr>
+								<th scope="col">Item Name</th>
+								<th scope="col">Category</th>
+								<th scope="col">Quantity</th>
+								<th scope="col">Status</th>
+							</tr>
+						</thead>
+						<tbody id="dashboard-table-body">
+							<tr><td colspan="4">Loading inventory…</td></tr>
+						</tbody>
+					</table>
+				</div>
+			</section>
+
+			<!-- Inventory Page -->
+			<section id="inventory" class="page">
+				<p class="eyebrow">YOUR MERCHANDISE</p><h1>Inventory</h1>
+				<p>View and manage University of Houston merchandise.</p>
+				<p class="demo-note">
+					Database inventory · Opening counts may still need verification.
+				</p>
+				<div class="content-card">
+					<h2>Merchandise inventory</h2>
+					<p style="margin-bottom: 20px;">
+						Current quantities and setpoints come from the database. Baseline Qty. is the recorded opening count; a dash means it has not been recorded. A missing unit value means it has not been provided.
+					</p>
+					<table>
+						<thead>
+							<tr>
+								<th scope="col">Category</th>
+								<th scope="col">Item Name</th>
+								<th scope="col">Gender</th>
+								<th scope="col">Size</th>
+								<th scope="col">Baseline Qty.</th>
+								<th scope="col">Current Qty.</th>
+								<th scope="col">Setpoint</th>
+								<th scope="col">Unit Value</th>
+							</tr>
+						</thead>
+						<tbody id="inventory-table-body">
+							<tr><td colspan="8">Loading inventory…</td></tr>
+						</tbody>
+					</table>
+				</div>
+				<div class="content-card">
+					<h2>Change a setpoint</h2>
+					<p class="card-intro">A low-stock alert is sent when the current quantity reaches the setpoint. The suggested setpoint is 40% of the recorded baseline.</p>
+					<form id="setpoint-form" class="inline-form">
+						<div class="form-group">
+							<label for="setpoint-variant">Item / Variant</label>
+							<select id="setpoint-variant" required><option value="">-- Select an Item --</option></select>
+						</div>
+						<div class="form-group">
+							<label for="setpoint-value">New setpoint</label>
+							<input type="number" id="setpoint-value" min="0" step="1" required>
+						</div>
+						<div class="form-actions">
+							<button type="submit" class="btn-primary">Save setpoint</button>
+							<button type="button" id="setpoint-reset" class="btn-secondary">Use suggested</button>
+						</div>
+					</form>
+					<p id="setpoint-feedback" class="feedback" role="status" aria-live="polite"></p>
+				</div>
+			</section>
+
+			<!-- Stock Transactions Page -->
+			<section id="withdraw" class="page">
+				<p class="eyebrow">INVENTORY MOVEMENTS</p><h1>Stock transactions</h1>
+				<p>Record inventory additions and distributions.</p>
+				<p class="demo-note">
+					Saved transactions update inventory immediately. Stock is checked before anything is saved.
+				</p>
+				<div class="content-card">
+					<h2>Record a stock movement</h2>
+					<form id="withdrawal-form">
+
+						<!-- Transaction Type -->
+						<div class="form-group">
+							<label for="transaction-type">Transaction Type</label>
+							<select id="transaction-type" required>
+								<option value="">-- Select Transaction Type --</option>
+								<option value="in">Stock In</option>
+								<option value="out">Stock Out</option>
+							</select>
+						</div>
+
+
+                        <div class="form-group" id="stock-in-reason-group" hidden>
+                            <label for="stock-in-reason">Stock In Reason</label>
+                            <select id="stock-in-reason" disabled>
+                                <option value="">-- Select Reason --</option>
+                                <option value="Received">Received</option>
+                                <option value="Returned">Returned</option>
+                                <option value="Adjustment">Adjustment</option>
+                            </select>
+                        </div>
+                        <h3>Merchandise Items</h3>
+                        <p>Select each item variant once. Quantities must be positive whole numbers.</p>
+                        <div id="transaction-items">
+                            <div class="transaction-item-row">
+                                <div class="form-group">
+                                    <label for="transaction-item-1">Item / Variant</label>
+                                    <select id="transaction-item-1" name="variant[]" class="variant-select" required>
+                                        <option value="">-- Select an Item --</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="transaction-quantity-1">Quantity</label>
+                                    <input type="number" id="transaction-quantity-1" name="quantity[]" min="1" step="1" required>
+                                </div>
+                                <button type="button" class="btn-secondary remove-transaction-item" disabled>Remove</button>
+                            </div>
+                        </div>
+                        <button type="button" class="btn-secondary" id="add-transaction-item">+ Add Another Item</button>
+
+						<!-- Transaction Information -->
+						<h3>Transaction Details</h3>
+						<div class="form-group">
+							<label for="transaction-user">Recorded By</label>
+							<input type="text" id="transaction-user" value="Select your name at the top of the page" readonly>
+						</div>
+						<div class="form-group">
+							<label for="transaction-date">Date and Time</label>
+							<input type="text" id="transaction-date" value="Assigned when saved" readonly>
+						</div>
+
+						<!-- Distribution Details -->
+						<h3>Distribution Information</h3>
+						<p style="margin-bottom: 20px;">
+							Complete these fields for Stock Out transactions.
+						</p>
+						<div class="form-group">
+							<label for="distribution-category">
+								Distribution Category
+							</label>
+							<select id="distribution-category" class="lookup-select" data-lookup="distributionCategories">
+								<option value="">-- Select Category --</option>
+							</select>
+						</div>
+						<div class="form-group">
+							<label for="recipient-context">
+								Recipient Context
+							</label>
+							<select id="recipient-context" class="lookup-select" data-lookup="recipientContexts">
+								<option value="">-- Select Recipient --</option>
+							</select>
+						</div>
+						<div class="form-group">
+								<label for="transaction-event-purpose">Event / Purpose</label>
+								<select id="transaction-event-purpose" class="lookup-select" data-lookup="eventPurposes">
+									<option value="">-- Select Purpose (optional) --</option>
+								</select>
+							</div>
+							<div class="form-group">
+								<label for="transaction-purpose">Event Details</label>
+								<input type="text" id="transaction-purpose" maxlength="255" placeholder="e.g. Spring legislative visit">
+							</div>
+							<div class="form-group">
+								<label for="transaction-recipient-name">Recipient Name</label>
+								<input type="text" id="transaction-recipient-name" maxlength="150" placeholder="Optional">
+							</div>
+						<div class="form-group">
+							<label for="transaction-notes">
+								Additional Notes
+							</label>
+							<textarea id="transaction-notes" maxlength="1000" rows="4" placeholder="Enter any additional details"></textarea>
+						</div>
+						<button type="submit" class="btn-primary">Save Transaction</button>
+                        <p id="transaction-feedback" role="status" aria-live="polite"></p>
+					</form>
+				</div>
+				<div class="content-card">
+					<div class="section-heading"><div><h2>Recent transactions</h2><p>The last 10 transactions. Delete one entered by mistake; its inventory is put back and the deletion is logged. Full history is under Reports.</p></div></div>
+					<table>
+						<thead>
+							<tr>
+								<th scope="col">#</th>
+								<th scope="col">Date</th>
+								<th scope="col">Type</th>
+								<th scope="col">Items</th>
+								<th scope="col">Details</th>
+								<th scope="col">Recorded By</th>
+								<th scope="col"><span class="visually-hidden">Actions</span></th>
+							</tr>
+						</thead>
+						<tbody id="recent-transactions-body">
+							<tr><td colspan="7">Loading transactions…</td></tr>
+						</tbody>
+					</table>
+					<p id="recent-transactions-feedback" class="feedback" role="status" aria-live="polite"></p>
+				</div>
+			</section>
+
+			<!-- Common Giveaway Combinations Page -->
+			<section id="bundles" class="page">
+				<p class="eyebrow">GIFTING & OUTREACH</p><h1>Giveaway combinations</h1>
+				<p>
+					Manage reusable merchandise combinations for university gifts and community outreach.
+				</p>
+				<p class="demo-note">
+					Use a saved combination as a starting point; every item and quantity can be changed before submitting.
+				</p>
+				<div class="content-card">
+					<div class="bundle-header">
+							<h2>Giveaway Options</h2>
+						</div>
+						<div class="bundle-grid" id="combination-cards">
+							<div class="bundle-card">
+								<h3>Custom Giveaway</h3>
+								<p class="bundle-description">
+									Create a one-time giveaway by selecting your own merchandise and quantities. You can also save it as a reusable combination.
+								</p>
+								<button type="button" class="btn-primary" id="open-custom-giveaway" aria-controls="custom-giveaway-panel" aria-expanded="false">
+									+ Create Custom Giveaway
+								</button>
+							</div>
+						</div>
+
+						<!-- Custom Giveaway Form -->
+					<div id="custom-giveaway-panel" class="giveaway-form-panel" hidden>
+						<h2 id="giveaway-panel-title">Create Custom Giveaway</h2>
+							<p id="giveaway-panel-intro">Select items and quantities, then submit to record the giveaway as one Stock Out.</p>
+						<form id="custom-giveaway-form">
+							<h3>Merchandise Items</h3>
+							<div id="giveaway-items">
+								<div class="giveaway-item-row">
+									<div class="form-group">
+										<label for="giveaway-item-1">Item</label>
+										<select id="giveaway-item-1" name="item[]" class="variant-select" required>
+												<option value="">-- Select Item --</option>
+											</select>
+									</div>
+									<div class="form-group">
+										<label for="giveaway-quantity-1">Quantity</label>
+										<input type="number" id="giveaway-quantity-1" name="quantity[]" min="1" step="1" value="1" required>
+									</div>
+									<button type="button" class="remove-giveaway-item" disabled>
+										Remove
+									</button>
+								</div>
+							</div>
+							<button type="button" id="add-giveaway-item" class="btn-secondary">
+								+ Add Another Item
+							</button>
+							<h3>Distribution Information</h3>
+							<div class="form-group">
+								<label for="giveaway-category">Distribution Category</label>
+								<select id="giveaway-category" class="lookup-select" data-lookup="distributionCategories" required>
+										<option value="">-- Select Category --</option>
+									</select>
+							</div>
+							<div class="form-group">
+								<label for="giveaway-recipient">Recipient Context</label>
+								<select id="giveaway-recipient" class="lookup-select" data-lookup="recipientContexts" required>
+										<option value="">-- Select Recipient --</option>
+									</select>
+							</div>
+							<div class="form-group">
+									<label for="giveaway-event-purpose">Event / Purpose</label>
+									<select id="giveaway-event-purpose" class="lookup-select" data-lookup="eventPurposes">
+										<option value="">-- Select Purpose (optional) --</option>
+									</select>
+								</div>
+								<div class="form-group">
+									<label for="giveaway-purpose">Event Details</label>
+									<input type="text" id="giveaway-purpose" maxlength="255" placeholder="e.g. Community Outreach Event">
+								</div>
+								<div class="form-group">
+									<label for="giveaway-recipient-name">Recipient Name</label>
+									<input type="text" id="giveaway-recipient-name" maxlength="150" placeholder="Optional">
+								</div>
+							<div class="form-group">
+								<label for="giveaway-notes">Additional Notes</label>
+								<textarea id="giveaway-notes" maxlength="1000" rows="3" placeholder="Optional notes"></textarea>
+							</div>
+							<input type="hidden" id="giveaway-combination-id" value="">
+								<div class="form-actions">
+									<button type="submit" class="btn-primary">Submit Giveaway</button>
+									<button type="button" id="save-combination" class="btn-secondary">Save as Combination</button>
+									<button type="button" id="cancel-custom-giveaway" class="btn-secondary">Cancel</button>
+								</div>
+								<p id="giveaway-feedback" class="feedback" role="status" aria-live="polite"></p>
+							</form>
+					</div>
+				</div>
+			</section>
+
+			<!-- Email Alerts Page -->
+            <section id="alerts" class="page">
+                <p class="eyebrow">NOTIFICATIONS</p>
+                <h1>Email alerts</h1>
+                <p>Keep your team informed when merchandise needs restocking.</p>
+                <p class="demo-note">Manage one shared list of up to three recipients.</p>
+                <div id="alerts-connection" class="alerts-notice" role="status">Checking whether alert settings are connected…</div>
+                <div class="alerts-layout">
+                    <div class="content-card">
+                        <div class="section-heading"><div><h2>Alert recipients</h2><p>Add a colleague, update an address, or remove someone who has left.</p></div><span id="recipient-count" class="report-status">0 / 3</span></div>
+                        <form id="alert-recipients-form">
+                            <div id="alert-recipient-rows"></div>
+                            <p id="recipients-empty" class="alerts-empty">No recipients in this draft. Add an email address to get started.</p>
+                            <button type="button" id="add-alert-recipient" class="btn-secondary">+ Add recipient</button>
+                            <p class="alerts-help">Recipients receive the same low-stock alerts. Enter email addresses only—no email passwords are needed.</p>
+                            <div class="alerts-form-actions">
+                                <button type="submit" id="save-alert-recipients" class="btn-primary" disabled>Save changes</button>
+                                <button type="button" id="check-alert-recipients" class="btn-secondary">Check list</button>
+                            </div>
+                            <p id="alert-recipients-feedback" role="status" aria-live="polite"></p>
+                        </form>
+                    </div>
+                    <div class="content-card alerts-explainer">
+                        <h2>How alerts work</h2>
+                        <ol><li>Stock reaches or falls below its restock threshold.</li><li>The system creates a pending alert.</li><li>The email service sends a notification to the saved recipients.</li></ol>
+                        <p>Editing this list does not send an email. Emails go out automatically once a sender account is set up on the server.</p>
+                    </div>
+                </div>
+                <div class="content-card">
+                    <div class="section-heading"><div><h2>Email preview</h2><p>Sample content only. This preview does not send a message.</p></div><span class="report-status">Sample email</span></div>
+                    <div class="email-envelope"><p><strong>From</strong> GCR Inventory Alerts <span>(sender account to be configured)</span></p><p><strong>To</strong> <span id="alert-preview-to">Your saved recipients</span></p><p><strong>Subject</strong> UH Inventory — Low stock: Red UH Tote Bag</p></div>
+                    <article class="alert-email-preview" aria-label="Sample low-stock email">
+                        <div class="email-brand">UH <span>GCR INVENTORY</span></div>
+                        <div class="email-content"><p class="eyebrow">INVENTORY NOTIFICATION</p><h2>Time to review your stock.</h2><p>One of your inventory items has reached its restock threshold.</p>
+                            <dl><div><dt>Item</dt><dd>Red UH Tote Bag</dd></div><div><dt>Variant</dt><dd>Standard</dd></div><div><dt>Current quantity</dt><dd>12 units</dd></div><div><dt>Restock threshold</dt><dd>20 units</dd></div></dl>
+                            <p>Please open the inventory system and review this item for replenishment.</p><p class="email-caption">Automated low-stock notification. Contact your inventory team to update the recipient list.</p>
+                        </div>
+                    </article>
+                </div>
+            </section>
+
+            <section id="reports" class="page">
+				<p class="eyebrow">INSIGHTS & ACTIVITY</p><h1>Reports</h1>
+				<p>View inventory reports and operational insights.</p>
+				<p class="demo-note">
+					Reports run against live data. The date range applies to the usage, history and giveaway reports.
+				</p>
+				<div class="content-card">
+					<div class="section-heading report-range">
+						<h2>Available Reports</h2>
+						<div class="range-fields">
+							<div class="form-group"><label for="report-start">From</label><input type="date" id="report-start"></div>
+							<div class="form-group"><label for="report-end">To</label><input type="date" id="report-end"></div>
+						</div>
+					</div>
+					<div class="reports-grid">
+						<div class="report-card">
+							<h3>Current Inventory Report</h3>
+							<p>View merchandise items, variants, current quantities, setpoints, and available monetary values.</p>
+							<button type="button" class="btn-secondary run-report" data-report="current-inventory">Run report</button>
+						</div>
+						<div class="report-card">
+							<h3>Low Inventory / Restock Report</h3>
+							<p>Identify items at or below their setpoints and review inventory levels and alert statuses.</p>
+							<button type="button" class="btn-secondary run-report" data-report="low-inventory">Run report</button>
+						</div>
+						<div class="report-card">
+							<h3>Inventory Usage Report</h3>
+							<p>Track merchandise distributed during selected periods, including quantities and usage by category.</p>
+							<button type="button" class="btn-secondary run-report" data-report="usage" data-dated="true">Run report</button>
+						</div>
+						<div class="report-card">
+							<h3>Inventory Value Report</h3>
+							<p>Review inventory quantities and total values for items with available monetary information.</p>
+							<button type="button" class="btn-secondary run-report" data-report="value">Run report</button>
+						</div>
+						<div class="report-card">
+							<h3>Transaction History Report</h3>
+							<p>Review Stock In and Stock Out history, including dates, users, merchandise, quantities, and transaction details.</p>
+							<button type="button" class="btn-secondary run-report" data-report="history" data-dated="true">Run report</button>
+						</div>
+						<div class="report-card">
+							<h3>Giveaway / Relationship Gift Report</h3>
+							<p>Review merchandise distributed together, recipient context, distribution category, event details, and quantities.</p>
+							<button type="button" class="btn-secondary run-report" data-report="giveaway" data-dated="true">Run report</button>
+						</div>
+						<div class="report-card">
+							<h3>Demand / Forecasting Report</h3>
+							<p>Analyze historical merchandise usage to identify frequently distributed items and potential replenishment needs.</p>
+							<button type="button" class="btn-secondary run-report" data-report="forecast">Run report</button>
+						</div>
+						<div class="report-card">
+							<h3>Weekly Security Review</h3>
+							<p>Deleted transactions, changes made outside the app, staff and alert-email changes, and data integrity checks for the last 7 days.</p>
+							<button type="button" class="btn-secondary run-report" data-report="security-review">Run report</button>
+						</div>
+					</div>
+				</div>
+				<div class="content-card" id="report-output-card" hidden>
+					<div class="section-heading">
+						<div><h2 id="report-output-title">Report</h2><p id="report-output-meta"></p></div>
+						<button type="button" id="report-export" class="btn-secondary">Download CSV</button>
+					</div>
+					<div id="report-output"></div>
+				</div>
+			</section>
+
+            <!-- Staff Page -->
+            <section id="staff" class="page">
+				<p class="eyebrow">PEOPLE</p><h1>Staff</h1>
+				<p>Everyone who records inventory. Choose your name at the top of the page before saving anything.</p>
+				<p class="demo-note">Add staff when they start and deactivate them when they leave. Their past transactions keep their name.</p>
+				<div class="content-card">
+					<h2 id="staff-form-title">Add a staff member</h2>
+					<form id="staff-form" class="staff-form">
+						<input type="hidden" id="staff-id" value="">
+						<div class="form-group"><label for="staff-first">First name</label><input type="text" id="staff-first" maxlength="50" required></div>
+						<div class="form-group"><label for="staff-last">Last name</label><input type="text" id="staff-last" maxlength="50" required></div>
+						<div class="form-group"><label for="staff-email">Email</label><input type="email" id="staff-email" maxlength="254" required></div>
+						<div class="form-group"><label for="staff-type">Role</label>
+							<select id="staff-type">
+								<option>Full-Time Staff</option>
+								<option>Student Worker</option>
+								<option>Student Intern</option>
+								<option>Other Authorized</option>
+							</select>
+						</div>
+						<div class="form-actions">
+							<button type="submit" class="btn-primary" id="staff-submit">Add staff member</button>
+							<button type="button" class="btn-secondary" id="staff-cancel" hidden>Cancel</button>
+						</div>
+					</form>
+					<p id="staff-feedback" class="feedback" role="status" aria-live="polite"></p>
+				</div>
+				<div class="content-card">
+					<h2>Staff list</h2>
+					<table>
+						<thead>
+							<tr>
+								<th scope="col">Name</th>
+								<th scope="col">Email</th>
+								<th scope="col">Role</th>
+								<th scope="col">Status</th>
+								<th scope="col"><span class="visually-hidden">Actions</span></th>
+							</tr>
+						</thead>
+						<tbody id="staff-table-body">
+							<tr><td colspan="5">Loading staff…</td></tr>
+						</tbody>
+					</table>
+				</div>
+			</section>
+		</div>
+        </main>
+		<script src="app.js"></script>
+		<script src="script.js"></script>
+		<script src="data.js"></script>
+		<script src="transactions.js"></script>
+		<script src="giveaways.js"></script>
+		<script src="reports.js"></script>
+		<script src="staff.js"></script>
+		<script src="alerts.js"></script>
+	</body>
+</html>
