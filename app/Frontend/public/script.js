@@ -129,8 +129,21 @@ transactionForm.addEventListener("submit", event => {
         duplicate.reportValidity();
         return;
     }
-    transactionFeedback.textContent = "Demo form checked. Nothing was saved. The backend will verify available stock and save the transaction.";
+    // Save it (saveTransaction lives in data.js, next to the other API calls)
+    window.saveTransaction(transactionForm, transactionFeedback, resetTransactionForm);
 });
+
+// After a successful save: back to one empty item row, keep the transaction type
+function resetTransactionForm() {
+    const type = transactionTypeSelect.value;
+    transactionForm.reset();
+    Array.from(transactionItems.querySelectorAll(".transaction-item-row"))
+        .slice(1)
+        .forEach(row => row.remove());
+    updateTransactionRemoveButtons();
+    transactionTypeSelect.value = type;
+    updateTransactionForm();
+}
 updateTransactionForm();
 
 /* ==============================

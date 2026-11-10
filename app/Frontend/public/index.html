@@ -6,7 +6,49 @@
 		<title>UH Inventory Management System</title>
 		<link rel="stylesheet" href="style.css">
 	</head>
-	<body>
+	<body class="signed-out">
+
+		<!-- Sign-in / change password (shown until the user is signed in) -->
+		<div id="auth-screen" class="auth-screen">
+			<div class="auth-card">
+				<div class="brand-lockup"><span class="brand-mark" aria-hidden="true">UH</span><div><h2>Inventory</h2><span class="brand-subtitle">UNIVERSITY OF HOUSTON</span></div></div>
+				<p class="auth-unit">Government &amp; Community Relations</p>
+
+				<form id="login-form" novalidate>
+					<h1>Sign in</h1>
+					<div class="form-group">
+						<label for="login-username">Username</label>
+						<input type="text" id="login-username" autocomplete="username" maxlength="50" required>
+					</div>
+					<div class="form-group">
+						<label for="login-password">Password</label>
+						<input type="password" id="login-password" autocomplete="current-password" maxlength="200" required>
+					</div>
+					<button type="submit" class="btn-primary">Sign in</button>
+					<p id="login-message" class="auth-message" role="alert"></p>
+				</form>
+
+				<form id="change-password-form" novalidate hidden>
+					<h1>Choose a new password</h1>
+					<p class="auth-help">Your password was set by an administrator. Choose your own before continuing. Use at least 12 characters.</p>
+					<div class="form-group">
+						<label for="current-password">Current password</label>
+						<input type="password" id="current-password" autocomplete="current-password" maxlength="200" required>
+					</div>
+					<div class="form-group">
+						<label for="new-password">New password</label>
+						<input type="password" id="new-password" autocomplete="new-password" minlength="12" maxlength="72" required>
+					</div>
+					<div class="form-group">
+						<label for="confirm-password">Confirm new password</label>
+						<input type="password" id="confirm-password" autocomplete="new-password" minlength="12" maxlength="72" required>
+					</div>
+					<button type="submit" class="btn-primary">Save password</button>
+					<button type="button" id="change-password-cancel" class="btn-secondary">Sign out</button>
+					<p id="change-password-message" class="auth-message" role="alert"></p>
+				</form>
+			</div>
+		</div>
 
 		<!-- Sidebar Navigation -->
 		<aside class="sidebar">
@@ -23,7 +65,8 @@
 				<a href="#reports" class="nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3h10l4 4v14H5V3Zm10 0v5h4M8 17v-3m4 3v-6m4 6v-4"/></svg><span>Reports</span></a>
 			</nav>
 			<div class="sidebar-footer">
-				<span class="footer-monogram" aria-hidden="true">GCR</span><div><strong>GCR inventory</strong><p>Internal workspace</p></div>
+				<span class="footer-monogram" aria-hidden="true">GCR</span><div class="footer-user"><strong id="current-user-name">Signed in</strong><p>Signed in</p></div>
+				<button type="button" id="logout-button" class="logout-button">Sign out</button>
 			</div>
 		</aside>
 
@@ -116,7 +159,7 @@
 				<p class="eyebrow">INVENTORY MOVEMENTS</p><h1>Stock transactions</h1>
 				<p>Record inventory additions and distributions.</p>
 				<p class="demo-note">
-					Form preview · Check entries without saving a transaction.
+					Saved transactions update inventory right away and are recorded under your name.
 				</p>
 				<div class="content-card">
 					<h2>Record a stock movement</h2>
@@ -150,17 +193,6 @@
                                     <label for="transaction-item-1">Item / Variant</label>
                                     <select id="transaction-item-1" name="variant[]" required>
 								<option value="">-- Select an Item --</option>
-								<option value="tote">Red UH Tote Bags</option>
-								<option value="yeti">Black Can Yetis</option>
-								<option value="journal">Red Journals</option>
-								<option value="notebook">Red Notebooks</option>
-								<option value="cooler">Red Igloo Coolers</option>
-								<option value="polo-ladies-l">
-									Red UH Polos - Ladies / L
-								</option>
-								<option value="polo-males-xl">
-									Red UH Polos - Males / XL
-								</option>
 							</select>
                                 </div>
                                 <div class="form-group">
@@ -176,7 +208,7 @@
 						<h3>Transaction Details</h3>
 						<div class="form-group">
 							<label for="transaction-user">Recorded By</label>
-							<input type="text" id="transaction-user" value="Assigned after sign-in" readonly>
+							<input type="text" id="transaction-user" value="" readonly>
 						</div>
 						<div class="form-group">
 							<label for="transaction-date">Date and Time</label>
@@ -194,19 +226,7 @@
 							</label>
 							<select id="distribution-category">
 								<option value="">-- Select Category --</option>
-								<option value="community-event">
-									Community Event / Donation
-								</option>
-								<option value="government">
-									Giveaway - Government Relations
-								</option>
-								<option value="community">
-									Giveaway - Community Relations
-								</option>
-								<option value="internal">
-									Internal Staff
-								</option>
-							<option value="adjustment">Other / Inventory Adjustment</option></select>
+							</select>
 						</div>
 						<div class="form-group">
 							<label for="recipient-context">
@@ -214,11 +234,7 @@
 							</label>
 							<select id="recipient-context">
 								<option value="">-- Select Recipient --</option>
-								<option value="external">External</option>
-								<option value="internal">
-									In-Network / Within UH
-								</option>
-							<option value="not-applicable">Not Applicable</option></select>
+							</select>
 						</div>
 						<div class="form-group">
 							<label for="transaction-purpose">
@@ -232,10 +248,35 @@
 							</label>
 							<textarea id="transaction-notes" maxlength="1000" rows="4" placeholder="Enter any additional details"></textarea>
 						</div>
-						<button type="submit" class="btn-primary">Check Demo Form</button>
+						<button type="submit" class="btn-primary" id="transaction-submit">Save Transaction</button>
                         <p id="transaction-feedback" role="status" aria-live="polite"></p>
 					</form>
 				</div>
+				<div class="content-card">
+					<div class="section-heading">
+						<div>
+							<h2>Recent transactions</h2>
+							<p>The last 10 saved transactions, newest first.</p>
+						</div>
+					</div>
+					<table>
+						<thead>
+							<tr>
+								<th>#</th>
+								<th>Date</th>
+								<th>Type</th>
+								<th>Item</th>
+								<th>Qty</th>
+								<th>Details</th>
+								<th>Recorded By</th>
+							</tr>
+						</thead>
+						<tbody id="recent-transactions-body">
+							<tr><td colspan="7">Loading…</td></tr>
+						</tbody>
+					</table>
+				</div>
+
 			</section>
 
 			<!-- Common Giveaway Combinations Page -->
