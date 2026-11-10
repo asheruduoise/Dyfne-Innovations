@@ -1,0 +1,269 @@
+// UH Government & Community Relations - Inventory Management System
+// Dfyne Innovations | CIS 4375 | Paste into https://dbdiagram.io
+
+Project UH_GCR_Inventory {
+  database_type: 'MySQL'
+  Note: 'Local MySQL 8.0 inventory database for UH Government & Community Relations merchandise.'
+}
+
+// ---------------- USERS ----------------
+Table AppUser {
+  UserID int [pk, increment]
+  Username varchar(50) [not null, unique, note: 'CougarNet ID / login']
+  FirstName varchar(50) [not null]
+  LastName varchar(50) [not null]
+  Email varchar(254) [not null, unique]
+  UserType varchar(30) [not null, note: 'Full-Time Staff | Student Worker | Student Intern | Other Authorized (descriptive only - uniform access)']
+  IsActive boolean [not null, default: true]
+  IsSystemAccount boolean [not null, default: false, note: 'Build-script owner of seed data; hidden from staff picker']
+  CreatedAt datetime [not null, default: `CURRENT_TIMESTAMP`]
+  CreatedByUserID int [null, ref: > AppUser.UserID, note: 'Staff member who added this person (optional)']
+  Note: 'Staff list, maintained by any staff member in the app (usp_CreateUser) - no login. Forms record which staff member submitted.'
+}
+
+// ---------------- LOOKUPS ----------------
+Table Category {
+  CategoryID int [pk, increment]
+  CategoryName varchar(100) [not null, unique]
+  Description varchar(255)
+  IsActive boolean [not null, default: true]
+}
+
+Table Size {
+  SizeCode varchar(10) [pk, note: 'XS, S, M, L, XL, XXL, XXXL']
+  SizeName varchar(30) [not null]
+  SortOrder tinyint [not null, unique]
+}
+
+Table DistributionCategory {
+  DistributionCategoryID int [pk, increment]
+  CategoryName varchar(100) [not null, unique, note: 'Community Event / Donation | Giveaway - Government Relations | Giveaway - Community Relations | Internal Staff | Other / Inventory Adjustment']
+  Description varchar(255)
+  IsGiveaway boolean [not null, default: false]
+  IsActive boolean [not null, default: true]
+}
+
+Table RecipientContext {
+  RecipientContextID int [pk, increment]
+  ContextName varchar(50) [not null, unique, note: 'External | In-Network / Within UH | Not Applicable']
+  Description varchar(255)
+  IsActive boolean [not null, default: true]
+}
+
+Table EventPurpose {
+  EventPurposeID int [pk, increment]
+  PurposeName varchar(100) [not null, unique, note: 'Conference, Meeting, Community Outreach, Government Relations Event, Internal Use, Donation, Other']
+  IsActive boolean [not null, default: true]
+}
+
+// ---------------- MERCHANDISE ----------------
+Table Item {
+  ItemID int [pk, increment]
+  ItemName varchar(100) [not null, unique]
+  CategoryID int [not null, ref: > Category.CategoryID]
+  Description varchar(255)
+  UnitValue decimal(10,2) [null, note: 'OPTIONAL. NULL = unknown (distinct from $0). CHECK >= 0']
+  IsActive boolean [not null, default: true]
+  CreatedAt datetime [not null, default: `CURRENT_TIMESTAMP`]
+  UpdatedAt datetime
+  ModifiedByUserID int [null, ref: > AppUser.UserID, note: 'Staff member who last changed the item (set by trigger)']
+  Note: 'Merchandise definition (what the item is).'
+}
+
+Table ItemVariant {
+  VariantID int [pk, increment]
+  ItemID int [not null, ref: > Item.ItemID]
+  Gender varchar(10) [null, note: 'Ladies | Males | Unisex | NULL']
+  SizeCode varchar(10) [null, ref: > Size.SizeCode]
+  IsActive boolean [not null, default: true]
+  CreatedAt datetime [not null, default: `CURRENT_TIMESTAMP`]
+  GenderKey varchar(10) [note: 'GENERATED (stored): COALESCE(Gender, \'\') - NULL-safe unique key']
+  SizeKey varchar(10) [note: 'GENERATED (stored): COALESCE(SizeCode, \'\') - NULL-safe unique key']
+  indexes {
+    (ItemID, GenderKey, SizeKey) [unique, name: 'UQ_ItemVariant']
+  }
+  Note: 'Independently tracked unit (gender/size). Non-apparel items have one Standard variant (NULL/NULL).'
+}
+
+Table InventoryBalance {
+  VariantID int [pk, ref: - ItemVariant.VariantID, note: '1:1 with ItemVariant']
+  CurrentQuantity int [not null, default: 0, note: 'CHECK >= 0 - never negative']
+  BaselineQuantity int [null, note: 'Verified physical recount at go-live']
+  BaselineCountedAt datetime
+  SuggestedSetpoint int [note: 'GENERATED (stored): ~40% of BaselineQuantity, rounded, min 1']
+  Setpoint int [not null, default: 0, note: 'STORED threshold; alert when CurrentQuantity <= Setpoint']
+  SetpointIsManual boolean [not null, default: false]
+  SetpointUpdatedAt datetime
+  SetpointUpdatedBy int [ref: > AppUser.UserID]
+  LastMovementAt datetime
+  Note: 'Current-state inventory, separate from the definition and from movements. TRIGGER trg_InventoryBalance_LowStockAlert (AFTER UPDATE) raises/resolves InventoryAlert rows when CurrentQuantity <= Setpoint.'
+}
+
+// ---------------- GIVEAWAY TEMPLATES ----------------
+Table GiveawayCombination {
+  CombinationID int [pk, increment]
+  CombinationName varchar(100) [not null, unique]
+  Description varchar(255)
+  DefaultDistributionCategoryID int [ref: > DistributionCategory.DistributionCategoryID]
+  IsActive boolean [not null, default: true]
+  CreatedByUserID int [not null, ref: > AppUser.UserID]
+  CreatedAt datetime [not null, default: `CURRENT_TIMESTAMP`]
+  Note: 'Optional reusable template - convenience only, editable before submit.'
+}
+
+Table GiveawayCombinationLine {
+  CombinationLineID int [pk, increment]
+  CombinationID int [not null, ref: > GiveawayCombination.CombinationID]
+  VariantID int [not null, ref: > ItemVariant.VariantID]
+  SuggestedQuantity int [not null, default: 1, note: 'CHECK > 0']
+  indexes {
+    (CombinationID, VariantID) [unique, name: 'UQ_GiveComboLine']
+  }
+}
+
+// ---------------- TRANSACTIONS ----------------
+Table InventoryTransaction {
+  TransactionID int [pk, increment]
+  TransactionDate datetime [not null, default: `CURRENT_TIMESTAMP`]
+  UserID int [not null, ref: > AppUser.UserID]
+  TransactionType varchar(3) [not null, note: 'IN | OUT']
+  StockInReason varchar(20) [null, note: 'IN only: Opening Balance | Received | Returned | Adjustment']
+  DistributionCategoryID int [null, ref: > DistributionCategory.DistributionCategoryID, note: 'Required when OUT']
+  RecipientContextID int [null, ref: > RecipientContext.RecipientContextID, note: 'Required when OUT']
+  EventPurposeID int [null, ref: > EventPurpose.EventPurposeID]
+  EventDetails varchar(255)
+  RecipientName varchar(150)
+  CombinationID int [null, ref: > GiveawayCombination.CombinationID, note: 'Template used to pre-fill, if any']
+  Notes varchar(1000)
+  IsDeleted boolean [not null, default: false, note: 'Soft delete - inventory reversed by usp_DeleteTransaction']
+  DeletedAt datetime
+  DeletedByUserID int [ref: > AppUser.UserID]
+  DeleteReason varchar(255)
+  indexes {
+    (TransactionDate, TransactionType, IsDeleted) [name: 'IX_InvTxn_Date']
+  }
+  Note: 'Header: one Stock In / Stock Out event (single or multi-item). Soft-deleted via usp_DeleteTransaction (inventory reversed); direct DELETE blocked by trigger.'
+}
+
+Table TransactionLine {
+  TransactionLineID int [pk, increment]
+  TransactionID int [not null, ref: > InventoryTransaction.TransactionID]
+  VariantID int [not null, ref: > ItemVariant.VariantID]
+  Quantity int [not null, note: 'CHECK > 0']
+  UnitValueAtTransaction decimal(10,2) [null, note: 'Snapshot of Item.UnitValue']
+  LineValue decimal(14,2) [note: 'GENERATED (virtual): Quantity * UnitValueAtTransaction (NULL if unknown)']
+  indexes {
+    (TransactionID, VariantID) [unique, name: 'UQ_TxnLine_TxnVariant']
+    (VariantID, Quantity, TransactionID) [name: 'IX_TxnLine_VariantQty']
+  }
+}
+
+// ---------------- ALERTS ----------------
+Table AlertConfiguration {
+  AlertConfigurationID int [pk, increment]
+  ConfigurationName varchar(100) [not null, unique]
+  IsActive boolean [not null, default: true]
+  UpdatedAt datetime [not null, default: `CURRENT_TIMESTAMP`]
+  UpdatedByUserID int [ref: > AppUser.UserID]
+  ActiveKey tinyint [unique, note: 'GENERATED (stored): 1 when active, else NULL - only one active config']
+}
+
+Table AlertRecipient {
+  AlertRecipientID int [pk, increment]
+  AlertConfigurationID int [not null, ref: > AlertConfiguration.AlertConfigurationID]
+  RecipientSlot tinyint [not null, note: 'CHECK 1-3 -> max three recipients']
+  RecipientName varchar(100)
+  Email varchar(254) [not null]
+  IsActive boolean [not null, default: true]
+  indexes {
+    (AlertConfigurationID, RecipientSlot) [unique, name: 'UQ_AlertRecipient_Slot']
+    (AlertConfigurationID, Email) [unique, name: 'UQ_AlertRecipient_Email']
+  }
+}
+
+Table InventoryAlert {
+  AlertID int [pk, increment]
+  VariantID int [not null, ref: > ItemVariant.VariantID]
+  TriggeringTransactionID int [null, ref: > InventoryTransaction.TransactionID]
+  AlertConfigurationID int [null, ref: > AlertConfiguration.AlertConfigurationID]
+  AlertGeneratedAt datetime [not null, default: `CURRENT_TIMESTAMP`]
+  QuantityAtAlert int [not null]
+  SetpointAtAlert int [not null]
+  AlertStatus varchar(10) [not null, default: 'Pending', note: 'Pending | Sent | Resolved (one open alert per variant)']
+  EmailSentAt datetime
+  RecipientsNotified varchar(800)
+  LastSendError varchar(1000)
+  ResolvedAt datetime
+  SendAttempts int [not null, default: 0, note: 'Email tries; after 5 the alert leaves vw_PendingAlertEmails (bad address)']
+  OpenVariantKey int [unique, note: 'GENERATED (stored): VariantID while Pending/Sent, else NULL - one open alert per variant']
+  indexes {
+    (AlertStatus, VariantID, AlertGeneratedAt) [name: 'IX_InvAlert_Status']
+  }
+}
+
+// ---------------- AUDIT (WBS 5.5) ----------------
+Table TransactionAudit {
+  AuditID int [pk, increment]
+  TransactionID int [not null, ref: > InventoryTransaction.TransactionID]
+  AuditAction varchar(10) [not null, note: 'Created | Deleted']
+  AuditAt datetime [not null, default: `CURRENT_TIMESTAMP`]
+  AuditByUserID int [not null, ref: > AppUser.UserID]
+  TransactionType varchar(3) [not null, note: 'IN | OUT']
+  LineCount int [not null, note: 'CHECK > 0']
+  TotalUnits int [not null, note: 'CHECK > 0']
+  InventoryEffect varchar(10) [not null, note: 'Added | Removed (net effect of this action)']
+  Reason varchar(255) [note: 'Delete reason']
+  LineDetail json [note: 'Snapshot per line: VariantID, Item, Gender, Size, Qty, QtyBefore, QtyAfter']
+  indexes {
+    (AuditAt, AuditAction, TransactionType) [name: 'IX_TxnAudit_AuditAt']
+  }
+  Note: 'Append-only audit log of transaction creation and deletion/reversal. UPDATE/DELETE blocked by trigger.'
+}
+
+Table AuditLog {
+  AuditLogID bigint [pk, increment]
+  EventTime datetime(3) [not null, default: `CURRENT_TIMESTAMP(3)`]
+  UserID int [null, ref: > AppUser.UserID, note: 'Staff member credited; NULL for changes made outside the app']
+  Action varchar(30) [not null, note: 'Insert | Update | Delete | SetpointChange | TransactionDeleted']
+  TableName varchar(64)
+  RecordID varchar(64)
+  OldValue json
+  NewValue json
+  Detail varchar(500)
+  DbAccount varchar(100) [not null, note: 'MySQL account that made the change']
+  IsDirectEdit boolean [not null, default: false, note: 'TRUE = changed outside the stored procedures']
+  Note: 'Append-only change log for staff, items, setpoints, alert emails, templates and lookups (WBS 4.9).'
+}
+
+// ---------------- VISUAL GROUPS ----------------
+TableGroup Merchandise {
+  Category
+  Item
+  ItemVariant
+  Size
+  InventoryBalance
+}
+
+TableGroup Transactions {
+  InventoryTransaction
+  TransactionLine
+  DistributionCategory
+  RecipientContext
+  EventPurpose
+}
+
+TableGroup Giveaways {
+  GiveawayCombination
+  GiveawayCombinationLine
+}
+
+TableGroup Audit {
+  TransactionAudit
+  AuditLog
+}
+
+TableGroup Alerts {
+  AlertConfiguration
+  AlertRecipient
+  InventoryAlert
+}

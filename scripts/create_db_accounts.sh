@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Creates (or rotates the password of) the two MySQL accounts and attaches
-# their roles from db/08_db_roles_grants.sql. Passwords are read from the
+# their roles from db/07_db_roles_grants.sql. Passwords are read from the
 # environment / .env and sent to MySQL on stdin, so they never appear on a
 # command line, in the process list, or in this repo.
 #

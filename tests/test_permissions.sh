@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Connects AS THE APPLICATION ACCOUNT (svc_gcr_inventory) and proves it can
 # only run procedures / read views (spec §2, §3 "no direct table edits").
-# Needs SVC_DB_PASSWORD; run after build + create_db_accounts.sh.
+# Needs SVC_DB_PASSWORD; run after build, create_db_accounts.sh and tests/test_scenarios.sql
+# (the scenario suite creates staff member 2 used below).
 source "$(dirname "$0")/../scripts/lib.sh"
 : "${SVC_DB_PASSWORD:?Set SVC_DB_PASSWORD}"
 
@@ -30,7 +31,7 @@ echo "App account permission tests (svc_gcr_inventory)"
 expect_ok     P01 "Can run an entry-form procedure"              "CALL usp_GetSelectableVariants(NULL)"
 expect_ok     P02 "Can read report views"                        "SELECT COUNT(*) FROM vw_CurrentInventory"
 expect_ok     P03 "Can run the weekly security review"           "CALL usp_Security_WeeklyReview(7)"
-expect_denied P04 "Cannot read the user table (password hashes)" "SELECT Username, PasswordHash FROM AppUser"
+expect_denied P04 "Cannot read the staff table directly"         "SELECT Username, Email FROM AppUser"
 expect_denied P05 "Cannot read AuditLog directly"                "SELECT * FROM AuditLog"
 expect_denied P06 "Cannot edit quantities directly"              "UPDATE InventoryBalance SET CurrentQuantity = 999 WHERE VariantID = 1"
 expect_denied P07 "Cannot insert transactions directly"          "INSERT INTO InventoryTransaction (UserID, TransactionType, StockInReason) VALUES (1, 'IN', 'Received')"

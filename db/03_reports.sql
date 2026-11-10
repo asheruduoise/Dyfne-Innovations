@@ -1,18 +1,11 @@
-/* =====================================================================
-   PART 4 : REPORTING VIEWS + 7 REPORT PROCEDURES
-     1. Current Inventory        -> vw_CurrentInventory / usp_rpt_CurrentInventory
-     2. Low Inventory / Restock  -> vw_LowInventory     / usp_rpt_LowInventory
-     3. Inventory Usage          -> usp_rpt_InventoryUsage
-     4. Inventory Value          -> vw_InventoryValue   / usp_rpt_InventoryValue
-     5. Transaction History      -> vw_TransactionHistory / usp_rpt_TransactionHistory
-     6. Giveaway / Relationship  -> usp_rpt_Giveaway
-     7. Demand / Forecasting     -> usp_rpt_DemandForecast
-   Deleted (reversed) transactions are excluded unless requested.
-   Missing unit values stay NULL ("unknown") - never treated as $0.
-   ===================================================================== */
+-- =====================================================================
+-- UH Government & Community Relations - Inventory Management System
+-- Dfyne Innovations | CIS 4375 | Fall 2026
+-- Part 3: Views and reports
+-- =====================================================================
+
 USE UH_GCR_Inventory;
 
-/* ---------- base view: one row per item variant ---------- */
 CREATE OR REPLACE VIEW vw_CurrentInventory AS
 SELECT i.ItemID,
        v.VariantID,
@@ -28,7 +21,7 @@ SELECT i.ItemID,
        b.SuggestedSetpoint,
        b.SetpointIsManual,
        b.BaselineQuantity,
-       i.UnitValue,                                                  -- NULL = unknown
+       i.UnitValue,
        CAST(b.CurrentQuantity * i.UnitValue AS DECIMAL(12,2))        AS TotalValue,
        IF(i.UnitValue IS NULL, 'Not Provided', 'Provided')           AS ValueStatus,
        CASE WHEN b.BaselineQuantity IS NULL      THEN 'Not Yet Counted'
@@ -44,7 +37,6 @@ SELECT i.ItemID,
   JOIN InventoryBalance b ON b.VariantID  = v.VariantID
   LEFT JOIN Size s        ON s.SizeCode   = v.SizeCode;
 
-/* ---------- report 2 view: low inventory with open alert ---------- */
 CREATE OR REPLACE VIEW vw_LowInventory AS
 SELECT ci.CategoryName, ci.ItemName, ci.VariantLabel, ci.VariantID,
        ci.CurrentQuantity, ci.Setpoint, ci.BaselineQuantity, ci.StockStatus,
@@ -58,13 +50,11 @@ SELECT ci.CategoryName, ci.ItemName, ci.VariantLabel, ci.VariantID,
    AND ci.BaselineQuantity IS NOT NULL
    AND ci.CurrentQuantity <= ci.Setpoint;
 
-/* ---------- report 4 view: valued items only ---------- */
 CREATE OR REPLACE VIEW vw_InventoryValue AS
 SELECT CategoryID, CategoryName, ItemName, VariantLabel, VariantID, CurrentQuantity, UnitValue, TotalValue
   FROM vw_CurrentInventory
  WHERE UnitValue IS NOT NULL AND ItemIsActive AND VariantIsActive;
 
-/* ---------- report 5 view: line-level transaction history ---------- */
 CREATE OR REPLACE VIEW vw_TransactionHistory AS
 SELECT t.TransactionID,
        t.TransactionDate,
@@ -102,11 +92,12 @@ SELECT t.TransactionID,
   LEFT JOIN GiveawayCombination gc  ON gc.CombinationID          = t.CombinationID
   LEFT JOIN AppUser du              ON du.UserID                 = t.DeletedByUserID;
 
-/* ---------- support view: alert email queue for the application ---------- */
+-- Email queue: group by TriggeringTransactionID to send one email per transaction
 CREATE OR REPLACE VIEW vw_PendingAlertEmails AS
-SELECT a.AlertID, a.AlertGeneratedAt,
+SELECT a.AlertID, a.TriggeringTransactionID, a.AlertGeneratedAt,
        ci.CategoryName, ci.ItemName, ci.VariantLabel,
        ci.CurrentQuantity, ci.Setpoint,
+       a.SendAttempts, a.LastSendError,
        r.Recipients
   FROM InventoryAlert a
   JOIN vw_CurrentInventory ci ON ci.VariantID = a.VariantID
@@ -114,9 +105,60 @@ SELECT a.AlertID, a.AlertGeneratedAt,
                 FROM AlertRecipient ar
                 JOIN AlertConfiguration ac ON ac.AlertConfigurationID = ar.AlertConfigurationID
                WHERE ac.IsActive AND ar.IsActive) r
- WHERE a.AlertStatus = 'Pending';
+ WHERE a.AlertStatus = 'Pending'
+   AND a.SendAttempts < 5
+   AND r.Recipients IS NOT NULL;
 
-/* ---------- support view: readable audit log ---------- */
+CREATE OR REPLACE VIEW vw_FailedAlertEmails AS
+SELECT a.AlertID, a.TriggeringTransactionID, a.AlertGeneratedAt,
+       ci.ItemName, ci.VariantLabel, ci.CurrentQuantity, ci.Setpoint,
+       a.SendAttempts, a.LastSendError
+  FROM InventoryAlert a
+  JOIN vw_CurrentInventory ci ON ci.VariantID = a.VariantID
+ WHERE a.AlertStatus = 'Pending'
+   AND a.SendAttempts >= 5;
+
+-- Application views
+CREATE OR REPLACE VIEW vw_GiveawayCombinations AS
+SELECT gc.CombinationID, gc.CombinationName, gc.Description,
+       gc.DefaultDistributionCategoryID, dc.CategoryName AS DefaultDistributionCategory,
+       gl.VariantID, ci.ItemName, ci.VariantLabel, gl.SuggestedQuantity,
+       ci.CurrentQuantity, (ci.ItemIsActive AND ci.VariantIsActive) AS IsSelectable
+  FROM GiveawayCombination gc
+  JOIN GiveawayCombinationLine gl      ON gl.CombinationID = gc.CombinationID
+  JOIN vw_CurrentInventory ci          ON ci.VariantID     = gl.VariantID
+  LEFT JOIN DistributionCategory dc    ON dc.DistributionCategoryID = gc.DefaultDistributionCategoryID
+ WHERE gc.IsActive;
+
+CREATE OR REPLACE VIEW vw_Users AS
+SELECT u.UserID, u.Username, u.FirstName, u.LastName,
+       CONCAT(u.FirstName, ' ', u.LastName) AS FullName,
+       u.Email, u.UserType, u.IsActive,
+       u.CreatedAt,
+       CONCAT(c.FirstName, ' ', c.LastName)  AS AddedBy
+  FROM AppUser u
+  LEFT JOIN AppUser c ON c.UserID = u.CreatedByUserID
+ WHERE NOT u.IsSystemAccount;
+
+CREATE OR REPLACE VIEW vw_AlertRecipients AS
+SELECT ar.AlertRecipientID, ar.RecipientSlot, ar.RecipientName, ar.Email,
+       ac.UpdatedAt AS ConfigUpdatedAt,
+       CONCAT(u.FirstName, ' ', u.LastName) AS ConfigUpdatedBy
+  FROM AlertRecipient ar
+  JOIN AlertConfiguration ac ON ac.AlertConfigurationID = ar.AlertConfigurationID AND ac.IsActive
+  LEFT JOIN AppUser u        ON u.UserID = ac.UpdatedByUserID
+ WHERE ar.IsActive;
+
+CREATE OR REPLACE VIEW vw_SetupStatus AS
+SELECT x.ActiveUsers, x.AlertRecipients, x.VariantsCounted, x.ActiveVariants,
+       (x.ActiveUsers = 0)                    AS NeedsStaff,
+       (x.AlertRecipients = 0)                AS NeedsAlertRecipient,
+       (x.VariantsCounted < x.ActiveVariants) AS NeedsOpeningCounts
+  FROM (SELECT (SELECT COUNT(*) FROM AppUser WHERE IsActive AND NOT IsSystemAccount) AS ActiveUsers,
+               (SELECT COUNT(*) FROM vw_AlertRecipients)                             AS AlertRecipients,
+               (SELECT COUNT(*) FROM InventoryBalance WHERE BaselineQuantity IS NOT NULL) AS VariantsCounted,
+               (SELECT COUNT(*) FROM ItemVariant WHERE IsActive)                    AS ActiveVariants) x;
+
 CREATE OR REPLACE VIEW vw_TransactionAuditLog AS
 SELECT a.AuditID, a.AuditAt, a.AuditAction, a.TransactionID,
        IF(a.TransactionType = 'IN', 'Stock In', 'Stock Out') AS TransactionTypeLabel,
@@ -135,7 +177,7 @@ DROP PROCEDURE IF EXISTS usp_rpt_DemandForecast;
 
 DELIMITER $$
 
-/* REPORT 1 - CURRENT INVENTORY   (NULL category = all) */
+-- Reports
 CREATE PROCEDURE usp_rpt_CurrentInventory (
     IN p_CategoryID      INT,
     IN p_IncludeInactive BOOLEAN
@@ -150,7 +192,6 @@ BEGIN
      ORDER BY CategoryName, ItemName, Gender, SizeSortOrder;
 END$$
 
-/* REPORT 2 - LOW INVENTORY / RESTOCK */
 CREATE PROCEDURE usp_rpt_LowInventory ()
 BEGIN
     SELECT CategoryName, ItemName, VariantLabel, CurrentQuantity, Setpoint,
@@ -160,8 +201,6 @@ BEGIN
      ORDER BY (StockStatus <> 'Out of Stock'), UnitsBelowSetpoint DESC, ItemName;
 END$$
 
-/* REPORT 3 - INVENTORY USAGE (date range)
-   RS1: by item/variant   RS2: by distribution category & recipient context */
 CREATE PROCEDURE usp_rpt_InventoryUsage (
     IN p_StartDate              DATE,
     IN p_EndDate                DATE,
@@ -215,7 +254,6 @@ BEGIN
      ORDER BY TotalUnits DESC;
 END$$
 
-/* REPORT 4 - INVENTORY VALUE (only items WITH a value are summed) */
 CREATE PROCEDURE usp_rpt_InventoryValue (
     IN p_CategoryID INT
 )
@@ -236,11 +274,10 @@ BEGIN
      GROUP BY CategoryName WITH ROLLUP;
 END$$
 
-/* REPORT 5 - TRANSACTION HISTORY   (all filters optional: pass NULL) */
 CREATE PROCEDURE usp_rpt_TransactionHistory (
     IN p_StartDate       DATE,
     IN p_EndDate         DATE,
-    IN p_TransactionType VARCHAR(3),     -- 'IN' | 'OUT' | NULL = both
+    IN p_TransactionType VARCHAR(3),
     IN p_UserID          INT,
     IN p_VariantID       INT,
     IN p_IncludeDeleted  BOOLEAN
@@ -262,16 +299,13 @@ BEGIN
      ORDER BY TransactionDate DESC, TransactionID DESC, ItemName;
 END$$
 
-/* REPORT 6 - GIVEAWAY / RELATIONSHIP GIFT
-   RS1: one row per distribution, items given TOGETHER in one cell
-   RS2: item pairs most often given together */
 CREATE PROCEDURE usp_rpt_Giveaway (
     IN p_StartDate              DATE,
     IN p_EndDate                DATE,
     IN p_DistributionCategoryID INT,
     IN p_RecipientContextID     INT,
-    IN p_GiveawayOnly           BOOLEAN,     -- TRUE = only IsGiveaway categories
-    IN p_MultiItemOnly          BOOLEAN      -- TRUE = only distributions with 2+ items
+    IN p_GiveawayOnly           BOOLEAN,
+    IN p_MultiItemOnly          BOOLEAN
 )
 BEGIN
     SET SESSION group_concat_max_len = 8192;
@@ -352,7 +386,6 @@ BEGIN
      ORDER BY TimesGivenTogether DESC, ItemA, ItemB;
 END$$
 
-/* REPORT 7 - DEMAND / FORECASTING  (NULLs default to 180 / 90 days) */
 CREATE PROCEDURE usp_rpt_DemandForecast (
     IN p_LookbackDays INT,
     IN p_CoverageDays INT,
@@ -412,4 +445,4 @@ END$$
 
 DELIMITER ;
 
-SELECT 'Part 4 complete: reports created.' AS Status;
+SELECT 'Part 3 complete: reports created.' AS Status;

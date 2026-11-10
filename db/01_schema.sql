@@ -1,29 +1,29 @@
-/* =====================================================================
-   UH Government & Community Relations - Inventory Management System
-   Dfyne Innovations | CIS 4375 | Fall 2026
-   PART 1 : DATABASE + TABLES + CONSTRAINTS + INDEXES + TRIGGERS
-   Platform: MySQL 8.0.16+  (run in MySQL Workbench)
-   WARNING : Part 1 DROPS and recreates the database (clean rebuild).
-   ===================================================================== */
+-- =====================================================================
+-- UH Government & Community Relations - Inventory Management System
+-- Dfyne Innovations | CIS 4375 | Fall 2026
+-- Part 1: Schema (tables, constraints, indexes, triggers)
+-- Drops and recreates the database.
+-- =====================================================================
 
-SET SQL_SAFE_UPDATES = 0;   -- Workbench "safe updates" blocks some set-based UPDATEs
+SET SQL_SAFE_UPDATES = 0;
 DROP DATABASE IF EXISTS UH_GCR_Inventory;
 CREATE DATABASE UH_GCR_Inventory CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
 USE UH_GCR_Inventory;
 
-/* =====================================================================
-   1. USERS  (uniform access - no permission tiers by design)
-   ===================================================================== */
+-- Users (uniform access; UserType is descriptive only)
 CREATE TABLE AppUser (
     UserID      INT          NOT NULL AUTO_INCREMENT,
-    Username    VARCHAR(50)  NOT NULL,                -- CougarNet ID / login
+    Username    VARCHAR(50)  NOT NULL,
     FirstName   VARCHAR(50)  NOT NULL,
     LastName    VARCHAR(50)  NOT NULL,
     Email       VARCHAR(254) NOT NULL,
-    UserType    VARCHAR(30)  NOT NULL,                -- descriptive only, NOT a permission tier
+    UserType    VARCHAR(30)  NOT NULL,
     IsActive    BOOLEAN      NOT NULL DEFAULT TRUE,
+    IsSystemAccount BOOLEAN  NOT NULL DEFAULT FALSE,
     CreatedAt   DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CreatedByUserID INT      NULL,
     CONSTRAINT PK_AppUser          PRIMARY KEY (UserID),
+    CONSTRAINT FK_AppUser_CreatedBy FOREIGN KEY (CreatedByUserID) REFERENCES AppUser (UserID),
     CONSTRAINT UQ_AppUser_Username UNIQUE (Username),
     CONSTRAINT UQ_AppUser_Email    UNIQUE (Email),
     CONSTRAINT CK_AppUser_Email    CHECK (Email LIKE '%_@_%._%'),
@@ -32,9 +32,7 @@ CREATE TABLE AppUser (
                                                       'Student Intern', 'Other Authorized'))
 ) ENGINE = InnoDB;
 
-/* =====================================================================
-   2. LOOKUP / CONTROLLED-VALUE TABLES
-   ===================================================================== */
+-- Lookup tables
 CREATE TABLE Category (
     CategoryID    INT          NOT NULL AUTO_INCREMENT,
     CategoryName  VARCHAR(100) NOT NULL,
@@ -46,7 +44,7 @@ CREATE TABLE Category (
 ) ENGINE = InnoDB;
 
 CREATE TABLE Size (
-    SizeCode   VARCHAR(10) NOT NULL,                  -- XS, S, M, L, XL, XXL, XXXL
+    SizeCode   VARCHAR(10) NOT NULL,
     SizeName   VARCHAR(30) NOT NULL,
     SortOrder  TINYINT     NOT NULL,
     CONSTRAINT PK_Size           PRIMARY KEY (SizeCode),
@@ -65,7 +63,7 @@ CREATE TABLE DistributionCategory (
 
 CREATE TABLE RecipientContext (
     RecipientContextID INT          NOT NULL AUTO_INCREMENT,
-    ContextName        VARCHAR(50)  NOT NULL,         -- External | In-Network / Within UH | Not Applicable
+    ContextName        VARCHAR(50)  NOT NULL,
     Description        VARCHAR(255) NULL,
     IsActive           BOOLEAN      NOT NULL DEFAULT TRUE,
     CONSTRAINT PK_RecipientContext      PRIMARY KEY (RecipientContextID),
@@ -80,16 +78,13 @@ CREATE TABLE EventPurpose (
     CONSTRAINT UQ_EventPurpose_Name UNIQUE (PurposeName)
 ) ENGINE = InnoDB;
 
-/* =====================================================================
-   3. MERCHANDISE: Item (definition) -> ItemVariant (tracked unit)
-                   -> InventoryBalance (current state, 1:1 with variant)
-   ===================================================================== */
+-- Merchandise
 CREATE TABLE Item (
     ItemID       INT           NOT NULL AUTO_INCREMENT,
     ItemName     VARCHAR(100)  NOT NULL,
     CategoryID   INT           NOT NULL,
     Description  VARCHAR(255)  NULL,
-    UnitValue    DECIMAL(10,2) NULL,                  -- OPTIONAL. NULL = unknown (not the same as $0.00)
+    UnitValue    DECIMAL(10,2) NULL,
     IsActive     BOOLEAN       NOT NULL DEFAULT TRUE,
     CreatedAt    DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UpdatedAt    DATETIME      NULL,
@@ -103,11 +98,12 @@ CREATE TABLE Item (
 CREATE TABLE ItemVariant (
     VariantID  INT         NOT NULL AUTO_INCREMENT,
     ItemID     INT         NOT NULL,
-    Gender     VARCHAR(10) NULL,                      -- Ladies | Males | Unisex | NULL (n/a)
-    SizeCode   VARCHAR(10) NULL,                      -- FK to Size | NULL (n/a)
+    Gender     VARCHAR(10) NULL,
+    SizeCode   VARCHAR(10) NULL,
     IsActive   BOOLEAN     NOT NULL DEFAULT TRUE,
     CreatedAt  DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    -- MySQL UNIQUE allows repeated NULLs, so uniqueness uses NULL-safe keys
+
+    -- NULL-safe keys for the unique constraint (MySQL allows repeated NULLs)
     GenderKey  VARCHAR(10) AS (COALESCE(Gender, ''))   STORED,
     SizeKey    VARCHAR(10) AS (COALESCE(SizeCode, '')) STORED,
     CONSTRAINT PK_ItemVariant        PRIMARY KEY (VariantID),
@@ -117,16 +113,18 @@ CREATE TABLE ItemVariant (
     CONSTRAINT UQ_ItemVariant        UNIQUE (ItemID, GenderKey, SizeKey)
 ) ENGINE = InnoDB;
 
+-- Current quantity and low-stock setpoint, one row per variant
 CREATE TABLE InventoryBalance (
     VariantID          INT      NOT NULL,
     CurrentQuantity    INT      NOT NULL DEFAULT 0,
-    BaselineQuantity   INT      NULL,                 -- verified physical count at go-live (NULL = not yet counted)
+    BaselineQuantity   INT      NULL,
     BaselineCountedAt  DATETIME NULL,
-    -- Suggested setpoint = ~40% of verified baseline, rounded, minimum 1 when baseline > 0
+
+    -- 40% of baseline, minimum 1
     SuggestedSetpoint  INT AS (CASE WHEN BaselineQuantity IS NULL THEN NULL
                                     WHEN BaselineQuantity = 0     THEN 0
                                     ELSE GREATEST(1, ROUND(BaselineQuantity * 0.40)) END) STORED,
-    Setpoint           INT      NOT NULL DEFAULT 0,   -- STORED threshold
+    Setpoint           INT      NOT NULL DEFAULT 0,
     SetpointIsManual   BOOLEAN  NOT NULL DEFAULT FALSE,
     SetpointUpdatedAt  DATETIME NULL,
     SetpointUpdatedBy  INT      NULL,
@@ -139,9 +137,7 @@ CREATE TABLE InventoryBalance (
     CONSTRAINT CK_InvBal_Setpoint_NonNeg   CHECK (Setpoint >= 0)
 ) ENGINE = InnoDB;
 
-/* =====================================================================
-   4. COMMON GIVEAWAY COMBINATION (optional data-entry template)
-   ===================================================================== */
+-- Reusable giveaway templates
 CREATE TABLE GiveawayCombination (
     CombinationID                 INT          NOT NULL AUTO_INCREMENT,
     CombinationName               VARCHAR(100) NOT NULL,
@@ -170,17 +166,15 @@ CREATE TABLE GiveawayCombinationLine (
     CONSTRAINT CK_GiveComboLine_Qty         CHECK (SuggestedQuantity > 0)
 ) ENGINE = InnoDB;
 
-/* =====================================================================
-   5. INVENTORY TRANSACTION (header) + TRANSACTION LINE (detail)
-   ===================================================================== */
+-- Transactions (header and lines)
 CREATE TABLE InventoryTransaction (
     TransactionID          INT           NOT NULL AUTO_INCREMENT,
     TransactionDate        DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UserID                 INT           NOT NULL,
-    TransactionType        VARCHAR(3)    NOT NULL,     -- 'IN' | 'OUT'
-    StockInReason          VARCHAR(20)   NULL,         -- IN only
-    DistributionCategoryID INT           NULL,         -- OUT only (required)
-    RecipientContextID     INT           NULL,         -- OUT only (required)
+    TransactionType        VARCHAR(3)    NOT NULL,
+    StockInReason          VARCHAR(20)   NULL,
+    DistributionCategoryID INT           NULL,
+    RecipientContextID     INT           NULL,
     EventPurposeID         INT           NULL,
     EventDetails           VARCHAR(255)  NULL,
     RecipientName          VARCHAR(150)  NULL,
@@ -200,7 +194,7 @@ CREATE TABLE InventoryTransaction (
     CONSTRAINT CK_InvTxn_Type             CHECK (TransactionType IN ('IN', 'OUT')),
     CONSTRAINT CK_InvTxn_StockInReason    CHECK (StockInReason IS NULL OR
                                                  StockInReason IN ('Opening Balance', 'Received', 'Returned', 'Adjustment')),
-    -- Stock Out MUST have distribution category + recipient context; Stock In must not
+
     CONSTRAINT CK_InvTxn_TypeRules CHECK (
           (TransactionType = 'OUT' AND DistributionCategoryID IS NOT NULL AND RecipientContextID IS NOT NULL AND StockInReason IS NULL)
        OR (TransactionType = 'IN'  AND DistributionCategoryID IS NULL     AND RecipientContextID IS NULL     AND StockInReason IS NOT NULL)),
@@ -214,7 +208,7 @@ CREATE TABLE TransactionLine (
     TransactionID          INT           NOT NULL,
     VariantID              INT           NOT NULL,
     Quantity               INT           NOT NULL,
-    UnitValueAtTransaction DECIMAL(10,2) NULL,         -- snapshot of Item.UnitValue (NULL = unknown)
+    UnitValueAtTransaction DECIMAL(10,2) NULL,
     LineValue              DECIMAL(14,2) AS (Quantity * UnitValueAtTransaction) VIRTUAL,
     CONSTRAINT PK_TransactionLine     PRIMARY KEY (TransactionLineID),
     CONSTRAINT FK_TxnLine_Transaction FOREIGN KEY (TransactionID) REFERENCES InventoryTransaction (TransactionID),
@@ -224,16 +218,14 @@ CREATE TABLE TransactionLine (
     CONSTRAINT CK_TxnLine_UnitValue   CHECK (UnitValueAtTransaction IS NULL OR UnitValueAtTransaction >= 0)
 ) ENGINE = InnoDB;
 
-/* =====================================================================
-   6. ALERT CONFIGURATION (max 3 recipients) + INVENTORY ALERT
-   ===================================================================== */
+-- Low-stock alerts (up to 3 recipients)
 CREATE TABLE AlertConfiguration (
     AlertConfigurationID INT          NOT NULL AUTO_INCREMENT,
     ConfigurationName    VARCHAR(100) NOT NULL,
     IsActive             BOOLEAN      NOT NULL DEFAULT TRUE,
     UpdatedAt            DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UpdatedByUserID      INT          NULL,
-    ActiveKey            TINYINT AS (CASE WHEN IsActive THEN 1 END) STORED,   -- only ONE active config
+    ActiveKey            TINYINT AS (CASE WHEN IsActive THEN 1 END) STORED,
     CONSTRAINT PK_AlertConfiguration      PRIMARY KEY (AlertConfigurationID),
     CONSTRAINT UQ_AlertConfiguration_Name UNIQUE (ConfigurationName),
     CONSTRAINT UQ_AlertConfiguration_OneActive UNIQUE (ActiveKey),
@@ -243,7 +235,7 @@ CREATE TABLE AlertConfiguration (
 CREATE TABLE AlertRecipient (
     AlertRecipientID     INT          NOT NULL AUTO_INCREMENT,
     AlertConfigurationID INT          NOT NULL,
-    RecipientSlot        TINYINT      NOT NULL,       -- 1, 2, 3 -> hard cap of three recipients
+    RecipientSlot        TINYINT      NOT NULL,
     RecipientName        VARCHAR(100) NULL,
     Email                VARCHAR(254) NOT NULL,
     IsActive             BOOLEAN      NOT NULL DEFAULT TRUE,
@@ -259,7 +251,7 @@ CREATE TABLE AlertRecipient (
 CREATE TABLE InventoryAlert (
     AlertID                 INT           NOT NULL AUTO_INCREMENT,
     VariantID               INT           NOT NULL,
-    TriggeringTransactionID INT           NULL,       -- NULL when a setpoint change triggered it
+    TriggeringTransactionID INT           NULL,
     AlertConfigurationID    INT           NULL,
     AlertGeneratedAt        DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
     QuantityAtAlert         INT           NOT NULL,
@@ -269,7 +261,8 @@ CREATE TABLE InventoryAlert (
     RecipientsNotified      VARCHAR(800)  NULL,
     LastSendError           VARCHAR(1000) NULL,
     ResolvedAt              DATETIME      NULL,
-    -- only ONE open (Pending/Sent) alert per variant -> no duplicate emails
+    SendAttempts            INT           NOT NULL DEFAULT 0,
+
     OpenVariantKey          INT AS (CASE WHEN AlertStatus IN ('Pending', 'Sent') THEN VariantID END) STORED,
     CONSTRAINT PK_InventoryAlert        PRIMARY KEY (AlertID),
     CONSTRAINT FK_InvAlert_Variant      FOREIGN KEY (VariantID)               REFERENCES ItemVariant (VariantID),
@@ -277,24 +270,23 @@ CREATE TABLE InventoryAlert (
     CONSTRAINT FK_InvAlert_Config       FOREIGN KEY (AlertConfigurationID)    REFERENCES AlertConfiguration (AlertConfigurationID),
     CONSTRAINT UQ_InventoryAlert_OpenPerVariant UNIQUE (OpenVariantKey),
     CONSTRAINT CK_InvAlert_Status       CHECK (AlertStatus IN ('Pending', 'Sent', 'Resolved')),
-    CONSTRAINT CK_InvAlert_Qty          CHECK (QuantityAtAlert >= 0 AND SetpointAtAlert >= 0)
+    CONSTRAINT CK_InvAlert_Qty          CHECK (QuantityAtAlert >= 0 AND SetpointAtAlert >= 0),
+    CONSTRAINT CK_InvAlert_SendAttempts CHECK (SendAttempts >= 0)
 ) ENGINE = InnoDB;
 
-/* =====================================================================
-   6b. TRANSACTION AUDIT (append-only)
-   ===================================================================== */
+-- Append-only audit log
 CREATE TABLE TransactionAudit (
     AuditID         INT          NOT NULL AUTO_INCREMENT,
     TransactionID   INT          NOT NULL,
-    AuditAction     VARCHAR(10)  NOT NULL,            -- Created | Deleted
+    AuditAction     VARCHAR(10)  NOT NULL,
     AuditAt         DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
     AuditByUserID   INT          NOT NULL,
-    TransactionType VARCHAR(3)   NOT NULL,            -- IN | OUT
+    TransactionType VARCHAR(3)   NOT NULL,
     LineCount       INT          NOT NULL,
     TotalUnits      INT          NOT NULL,
-    InventoryEffect VARCHAR(10)  NOT NULL,            -- Added | Removed
+    InventoryEffect VARCHAR(10)  NOT NULL,
     Reason          VARCHAR(255) NULL,
-    LineDetail      JSON         NULL,                -- per line: VariantID, Item, Gender, Size, Qty, QtyBefore, QtyAfter
+    LineDetail      JSON         NULL,
     CONSTRAINT PK_TransactionAudit     PRIMARY KEY (AuditID),
     CONSTRAINT FK_TxnAudit_Transaction FOREIGN KEY (TransactionID) REFERENCES InventoryTransaction (TransactionID),
     CONSTRAINT FK_TxnAudit_User        FOREIGN KEY (AuditByUserID) REFERENCES AppUser (UserID),
@@ -304,20 +296,14 @@ CREATE TABLE TransactionAudit (
     CONSTRAINT CK_TxnAudit_Counts      CHECK (LineCount > 0 AND TotalUnits > 0)
 ) ENGINE = InnoDB;
 
-/* =====================================================================
-   7. PERFORMANCE INDEXES (FK columns are auto-indexed by InnoDB)
-   ===================================================================== */
 CREATE INDEX IX_InvTxn_Date        ON InventoryTransaction (TransactionDate, TransactionType, IsDeleted);
 CREATE INDEX IX_TxnLine_VariantQty ON TransactionLine (VariantID, Quantity, TransactionID);
 CREATE INDEX IX_InvAlert_Status    ON InventoryAlert (AlertStatus, VariantID, AlertGeneratedAt);
 CREATE INDEX IX_TxnAudit_AuditAt   ON TransactionAudit (AuditAt, AuditAction, TransactionType);
 
-/* =====================================================================
-   8. TRIGGERS
-   ===================================================================== */
+-- Triggers
 DELIMITER $$
 
--- Hard DELETEs bypass inventory reversal -> blocked; use usp_DeleteTransaction
 CREATE TRIGGER trg_InventoryTransaction_BlockHardDelete
 BEFORE DELETE ON InventoryTransaction
 FOR EACH ROW
@@ -334,7 +320,6 @@ BEGIN
         SET MESSAGE_TEXT = 'Direct DELETE of transaction lines is not allowed. Use usp_DeleteTransaction.';
 END$$
 
--- Audit log is append-only
 CREATE TRIGGER trg_TransactionAudit_BlockUpdate
 BEFORE UPDATE ON TransactionAudit
 FOR EACH ROW
@@ -349,9 +334,7 @@ BEGIN
     SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'TransactionAudit is append-only; rows cannot be deleted.';
 END$$
 
-/* LOW-STOCK ALERT TRIGGER (WBS 5.7)
-   CurrentQuantity <= Setpoint and no open alert -> new Pending alert
-   CurrentQuantity >  Setpoint and an open alert -> mark Resolved     */
+-- Raises or resolves an alert whenever quantity or setpoint changes
 CREATE TRIGGER trg_InventoryBalance_LowStockAlert
 AFTER UPDATE ON InventoryBalance
 FOR EACH ROW

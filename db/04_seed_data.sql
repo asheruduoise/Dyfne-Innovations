@@ -1,18 +1,17 @@
-/* =====================================================================
-   PART 5 : SEED / REFERENCE DATA + GO-LIVE OPENING COUNTS
-   >>> Replace every value marked  -- REPLACE  before go-live. <<<
-   ===================================================================== */
+-- =====================================================================
+-- UH Government & Community Relations - Inventory Management System
+-- Dfyne Innovations | CIS 4375 | Fall 2026
+-- Part 4: Reference data and starting inventory
+-- =====================================================================
+
 USE UH_GCR_Inventory;
 SET SQL_SAFE_UPDATES = 0;
 
-/* ---------- Users (uniform access; UserType is descriptive only) ---------- */
-INSERT INTO AppUser (Username, FirstName, LastName, Email, UserType) VALUES
- ('gcr.admin',    'GCR',     'Administrator', 'gcr.admin@example.edu',    'Full-Time Staff'),   -- REPLACE
- ('gcr.staff1',   'Staff',   'Member',        'gcr.staff1@example.edu',   'Full-Time Staff'),   -- REPLACE
- ('gcr.student1', 'Student', 'Worker',        'gcr.student1@example.edu', 'Student Worker'),    -- REPLACE
- ('gcr.intern1',  'Student', 'Intern',        'gcr.intern1@example.edu',  'Student Intern');    -- REPLACE
+-- System account that owns the seed data (deactivated at the end of this script)
+INSERT INTO AppUser (Username, FirstName, LastName, Email, UserType, IsSystemAccount)
+VALUES ('system', 'GCR', 'System', 'system@gcr-inventory.invalid', 'Other Authorized', TRUE);
 
-/* ---------- Merchandise categories ---------- */
+-- Lookup values
 INSERT INTO Category (CategoryName, Description) VALUES
  ('Accessories & Gear',           'Coolers, belt buckles, umbrellas and similar gear'),
  ('Apparel',                      'Jackets, polos, vests - tracked by gender and/or size'),
@@ -20,12 +19,10 @@ INSERT INTO Category (CategoryName, Description) VALUES
  ('Drinkware',                    'Tumblers, bottles, can coolers'),
  ('Office Supplies & Stationery', 'Folders, journals, notebooks, pens');
 
-/* ---------- Sizes (sort order drives report ordering) ---------- */
 INSERT INTO Size (SizeCode, SizeName, SortOrder) VALUES
  ('XS', 'Extra Small', 1), ('S', 'Small', 2), ('M', 'Medium', 3), ('L', 'Large', 4),
  ('XL', 'Extra Large', 5), ('XXL', '2X Large', 6), ('XXXL', '3X Large', 7);
 
-/* ---------- Distribution categories (Stock Out reason) ---------- */
 INSERT INTO DistributionCategory (CategoryName, Description, IsGiveaway) VALUES
  ('Community Event / Donation',      'Community events, outreach activities, donations, community-facing purposes', FALSE),
  ('Giveaway - Government Relations', 'Relationship-building gifts/giveaways for government relations activities',   TRUE),
@@ -33,18 +30,16 @@ INSERT INTO DistributionCategory (CategoryName, Description, IsGiveaway) VALUES
  ('Internal Staff',                  'Merchandise provided for internal office/staff purposes',                     FALSE),
  ('Other / Inventory Adjustment',    'Damaged, lost, or count-correction removals (explain in Notes)',              FALSE);
 
-/* ---------- Recipient context ---------- */
 INSERT INTO RecipientContext (ContextName, Description) VALUES
  ('External',               'Recipient outside the University of Houston'),
  ('In-Network / Within UH', 'UH employee, department, or other UH entity outside Government & Community Relations'),
  ('Not Applicable',         'No recipient (e.g., damaged/lost inventory adjustment)');
 
-/* ---------- Event / purpose ---------- */
 INSERT INTO EventPurpose (PurposeName) VALUES
  ('Conference'), ('Meeting'), ('Community Outreach'), ('Government Relations Event'),
  ('Government Relations Meeting'), ('Internal Use'), ('Donation'), ('Other');
 
-/* ---------- Item catalog (from reviewed workbook; UnitValue left NULL = unknown) ---------- */
+-- Item catalog and variants
 INSERT INTO Item (ItemName, CategoryID)
 SELECT x.ItemName, c.CategoryID
   FROM (          SELECT 'Red Igloo Cooler' AS ItemName, 'Accessories & Gear' AS CategoryName
@@ -61,7 +56,6 @@ SELECT x.ItemName, c.CategoryID
         UNION ALL SELECT 'Red Notebook',             'Office Supplies & Stationery') x
   JOIN Category c ON c.CategoryName = x.CategoryName;
 
-/* ---------- Variants (independently tracked units) ---------- */
 INSERT INTO ItemVariant (ItemID, Gender, SizeCode)
 SELECT i.ItemID, x.Gender, x.SizeCode
   FROM (          SELECT 'Red Igloo Cooler' AS ItemName, CAST(NULL AS CHAR(10)) AS Gender, CAST(NULL AS CHAR(10)) AS SizeCode
@@ -94,21 +88,12 @@ SELECT i.ItemID, x.Gender, x.SizeCode
         UNION ALL SELECT 'UH Vest',                  NULL,     'L') x
   JOIN Item i ON i.ItemName = x.ItemName;
 
-/* every variant gets a balance row (qty 0, setpoint 0 until the opening count) */
 INSERT INTO InventoryBalance (VariantID)
 SELECT v.VariantID FROM ItemVariant v
  WHERE NOT EXISTS (SELECT 1 FROM InventoryBalance b WHERE b.VariantID = v.VariantID);
 
-/* ---------- Low-inventory alert recipients (1-3, configurable) ---------- */
-SET @Admin = (SELECT UserID FROM AppUser WHERE Username = 'gcr.admin');
+SET @Admin = (SELECT UserID FROM AppUser WHERE Username = 'system');
 
-CALL usp_SetAlertRecipients('[
-  {"Slot": 1, "Name": "Project Sponsor",  "Email": "sponsor@example.edu"},
-  {"Slot": 2, "Name": "Office Manager",   "Email": "office.manager@example.edu"},
-  {"Slot": 3, "Name": "Inventory Backup", "Email": "inventory.backup@example.edu"}
-]', @Admin);   -- REPLACE emails (1 to 3 entries allowed)
-
-/* ---------- Sample Common Giveaway Combination (template = convenience only) ---------- */
 SET @GRCat = (SELECT DistributionCategoryID FROM DistributionCategory WHERE CategoryName = 'Giveaway - Government Relations');
 SET @ComboLines = (SELECT JSON_ARRAYAGG(JSON_OBJECT('VariantID', v.VariantID, 'Quantity', 1))
                      FROM ItemVariant v JOIN Item i ON i.ItemID = v.ItemID
@@ -117,12 +102,9 @@ SET @ComboLines = (SELECT JSON_ARRAYAGG(JSON_OBJECT('VariantID', v.VariantID, 'Q
 CALL usp_SaveGiveawayCombination('Standard Relationship Gift', @Admin, @ComboLines,
      'Tote, Yeti, Journal, Notebook - users may add/remove/change before submitting', @GRCat, @ComboID);
 
-/* =====================================================================
-   GO-LIVE OPENING BALANCES
-   The quantities below are the OLD WORKBOOK values used only as
-   PLACEHOLDER/TEST data - overwrite "Qty" with the physical recount.
-   ===================================================================== */
-SET @CountedBy = (SELECT UserID FROM AppUser WHERE Username = 'gcr.admin');   -- REPLACE with counter
+-- Starting inventory from the existing workbook. The physical recount replaces it
+-- (usp_LoadOpeningCountsFromImport).
+SET @CountedBy = (SELECT UserID FROM AppUser WHERE Username = 'system');
 
 CALL usp_LoadOpeningCounts('[
   {"Item": "Red Igloo Cooler",                                 "Qty": 3},
@@ -155,10 +137,8 @@ CALL usp_LoadOpeningCounts('[
   {"Item": "Red Notebook",                                     "Qty": 583}
 ]', @CountedBy);
 
-/* Review: opening balance, suggested setpoint and status per variant */
-SELECT CategoryName, ItemName, VariantLabel, BaselineQuantity, CurrentQuantity,
-       SuggestedSetpoint, Setpoint, StockStatus
-  FROM vw_CurrentInventory
- ORDER BY CategoryName, ItemName, Gender, SizeSortOrder;
+UPDATE AppUser SET IsActive = FALSE WHERE IsSystemAccount;
 
-SELECT 'Part 5 complete: seed data and opening balances loaded.' AS Status;
+SELECT * FROM vw_SetupStatus;
+
+SELECT 'Part 4 complete: seed data and starting inventory loaded.' AS Status;

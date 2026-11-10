@@ -113,17 +113,26 @@ function renderStats(s) {
     }
 }
 
+let inventoryRows = [];
+
 async function loadLiveData() {
     try {
         const [stats, rows] = await Promise.all([
             getJson("/api/dashboard"),
             getJson("/api/inventory")
         ]);
+        inventoryRows = rows;
         renderStats(stats);
         renderInventory(rows);
         renderDashboardTable(rows);
+        fillSetpointItems(rows);
     } catch (err) {
         console.error(err);
+        for (const id of ["stat-catalog", "stat-low", "stat-value"]) {
+            document.getElementById(id).textContent = "Unavailable";
+        }
+        document.getElementById("stat-low-detail").textContent = "Start the app server to load data";
+        document.getElementById("stat-value-detail").textContent = "Database connection required";
         const message = "Could not load inventory from the database. Please try again.";
         const a = document.getElementById("inventory-table-body");
         const b = document.getElementById("dashboard-table-body");
@@ -131,5 +140,51 @@ async function loadLiveData() {
         if (b) showMessage(b, 4, message);
     }
 }
+
+/* ==============================
+   SETPOINT CHANGES (Inventory page)
+================================= */
+
+const setpointForm = document.getElementById("setpoint-form");
+const setpointVariant = document.getElementById("setpoint-variant");
+const setpointValue = document.getElementById("setpoint-value");
+const setpointFeedback = document.getElementById("setpoint-feedback");
+
+function fillSetpointItems(rows) {
+    GCR.fillSelect(setpointVariant, rows, r => String(r.VariantID), r =>
+        `${r.VariantLabel === "Standard" ? r.ItemName : r.ItemName + " (" + r.VariantLabel + ")"} - setpoint ${r.Setpoint}, suggested ${r.SuggestedSetpoint ?? "n/a"}`);
+}
+
+setpointVariant.addEventListener("change", () => {
+    const row = inventoryRows.find(r => String(r.VariantID) === setpointVariant.value);
+    setpointValue.value = row ? row.Setpoint : "";
+    setpointFeedback.textContent = "";
+});
+
+async function saveSetpoint(reset) {
+    setpointFeedback.textContent = "";
+    const userId = GCR.requireStaff(setpointFeedback);
+    if (!userId) return;
+    if (!setpointVariant.value) {
+        setpointFeedback.textContent = "Choose an item first.";
+        return;
+    }
+    const body = reset ? { userId, reset: true } : { userId, setpoint: Number(setpointValue.value) };
+    try {
+        await GCR.api("POST", `/api/inventory/${setpointVariant.value}/setpoint`, body);
+        const label = setpointVariant.selectedOptions[0].textContent.split(" - setpoint")[0];
+        setpointFeedback.textContent = reset ? `${label} reset to its suggested setpoint.` : `${label} setpoint saved.`;
+        GCR.inventoryChanged();
+    } catch (err) {
+        setpointFeedback.textContent = err.message;
+    }
+}
+
+setpointForm.addEventListener("submit", event => {
+    event.preventDefault();
+    saveSetpoint(false);
+});
+document.getElementById("setpoint-reset").addEventListener("click", () => saveSetpoint(true));
+document.addEventListener("gcr:inventory-changed", loadLiveData);
 
 loadLiveData();

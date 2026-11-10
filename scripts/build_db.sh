@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Builds the database from db/01..08 in order, stopping at the first error.
+# Builds the database from db/01..07 in order, stopping at the first error.
 # Part 1 DROPS the database, so this refuses to touch an existing Production
 # database unless you pass --rebuild-production on purpose.
 source "$(dirname "$0")/lib.sh"

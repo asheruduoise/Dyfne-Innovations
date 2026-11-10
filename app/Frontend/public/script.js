@@ -43,173 +43,59 @@ showPage();
 
 
 /* ==============================
-   STOCK TRANSACTION FORM
+   ITEM ROWS (shared by the transaction and giveaway forms)
 ================================= */
 
-const transactionTypeSelect = document.getElementById("transaction-type");
-
-// Fields displayed only for Stock Out
-const stockOutFieldIds = [
-    "transaction-item-2",
-    "transaction-quantity-2",
-    "distribution-category",
-    "recipient-context",
-    "transaction-purpose"
-];
-
-// Find the Distribution Information heading and description
-const distributionHeading = Array.from(
-    document.querySelectorAll("#withdrawal-form h3")
-).find((heading) =>
-    heading.textContent.trim() === "Distribution Information"
-);
-
-const distributionDescription = distributionHeading?.nextElementSibling;
-
-// Show or hide fields depending on transaction type
-function updateTransactionForm() {
-    if (!transactionTypeSelect) return;
-
-    const isStockOut = transactionTypeSelect.value === "out";
-
-    // Toggle Stock Out fields
-    stockOutFieldIds.forEach((id) => {
-        const field = document.getElementById(id);
-        const group = field?.closest(".form-group");
-
-        if (group) {
-            group.style.display = isStockOut ? "" : "none";
-        }
-    });
-
-    // Toggle Distribution Information heading
-    if (distributionHeading) {
-        distributionHeading.style.display = isStockOut ? "" : "none";
-    }
-
-    // Toggle Distribution Information description
-    if (distributionDescription) {
-        distributionDescription.style.display = isStockOut ? "" : "none";
-    }
+// Adds a row by copying the first one; returns the new row
+function addItemRow(container, rowClass, idPrefix, defaultQuantity) {
+    const row = container.querySelector("." + rowClass).cloneNode(true);
+    const item = row.querySelector("select");
+    const quantity = row.querySelector("input");
+    const n = container.dataset.nextId ? Number(container.dataset.nextId) : container.children.length + 1;
+    container.dataset.nextId = String(n + 1);
+    item.id = idPrefix + "-item-" + n;
+    quantity.id = idPrefix + "-quantity-" + n;
+    const labels = row.querySelectorAll("label");
+    labels[0].htmlFor = item.id;
+    labels[1].htmlFor = quantity.id;
+    item.value = "";
+    quantity.value = defaultQuantity;
+    item.setCustomValidity("");
+    container.appendChild(row);
+    updateRemoveButtons(container, rowClass);
+    return row;
 }
 
-// Update the form when the transaction type changes
-if (transactionTypeSelect) {
-    transactionTypeSelect.addEventListener("change", updateTransactionForm);
-
-    // Set initial form visibility
-    updateTransactionForm();
+function updateRemoveButtons(container, rowClass) {
+    const rows = container.querySelectorAll("." + rowClass);
+    rows.forEach(row => { row.querySelector("button").disabled = rows.length === 1; });
 }
 
+// Keep only the first row and clear it
+function resetItemRows(container, rowClass, defaultQuantity) {
+    container.querySelectorAll("." + rowClass).forEach((row, i) => { if (i > 0) row.remove(); });
+    const first = container.querySelector("." + rowClass);
+    first.querySelector("select").value = "";
+    first.querySelector("input").value = defaultQuantity;
+    updateRemoveButtons(container, rowClass);
+}
 
-/* ==============================
-   CUSTOM GIVEAWAY FUNCTIONALITY
-================================= */
-
-const openGiveawayBtn = document.getElementById("open-custom-giveaway");
-const giveawayPanel = document.getElementById("custom-giveaway-panel");
-const cancelGiveawayBtn = document.getElementById("cancel-custom-giveaway");
-const addGiveawayItemBtn = document.getElementById("add-giveaway-item");
-const giveawayItems = document.getElementById("giveaway-items");
-const customGiveawayForm = document.getElementById("custom-giveaway-form");
-
-// Make sure all required HTML elements exist
-if (
-    openGiveawayBtn &&
-    giveawayPanel &&
-    cancelGiveawayBtn &&
-    addGiveawayItemBtn &&
-    giveawayItems &&
-    customGiveawayForm
-) {
-    let nextGiveawayItemId = 2;
-
-    // Open the Custom Giveaway form
-    openGiveawayBtn.addEventListener("click", function () {
-        giveawayPanel.hidden = false;
-        openGiveawayBtn.setAttribute("aria-expanded", "true");
-
-        giveawayPanel.scrollIntoView({
-            behavior: "smooth",
-            block: "start"
-        });
-    });
-
-    // Update the Remove buttons
-    function updateRemoveButtons() {
-        const rows = giveawayItems.querySelectorAll(".giveaway-item-row");
-
-        rows.forEach((row) => {
-            const button = row.querySelector(".remove-giveaway-item");
-            button.disabled = rows.length === 1;
-        });
+// Collects [{variantId, quantity}] and flags repeated items; returns null if invalid
+function collectItemRows(container, feedback) {
+    const seen = new Set();
+    const lines = [];
+    for (const row of container.children) {
+        const select = row.querySelector("select");
+        const quantity = row.querySelector("input");
+        select.setCustomValidity("");
+        if (select.value && seen.has(select.value)) {
+            select.setCustomValidity("Select each item once; combine its quantities in one row.");
+            feedback.textContent = "Repeated item: combine its quantities in one row.";
+            select.reportValidity();
+            return null;
+        }
+        seen.add(select.value);
+        lines.push({ variantId: Number(select.value), quantity: Number(quantity.value) });
     }
-
-    // Add another merchandise item
-    addGiveawayItemBtn.addEventListener("click", function () {
-        const firstRow = giveawayItems.querySelector(".giveaway-item-row");
-        const newRow = firstRow.cloneNode(true);
-
-        const itemSelect = newRow.querySelector('select[name="item[]"]');
-        const quantityInput = newRow.querySelector('input[name="quantity[]"]');
-        const labels = newRow.querySelectorAll("label");
-
-        // Assign unique IDs
-        itemSelect.id = "giveaway-item-" + nextGiveawayItemId;
-        quantityInput.id = "giveaway-quantity-" + nextGiveawayItemId;
-
-        labels[0].htmlFor = itemSelect.id;
-        labels[1].htmlFor = quantityInput.id;
-
-        nextGiveawayItemId++;
-
-        // Reset the new item fields
-        itemSelect.value = "";
-        quantityInput.value = "1";
-
-        // Add the new row
-        giveawayItems.appendChild(newRow);
-
-        updateRemoveButtons();
-    });
-
-    // Remove a merchandise item
-    giveawayItems.addEventListener("click", function (event) {
-        if (!event.target.classList.contains("remove-giveaway-item")) {
-            return;
-        }
-
-        const row = event.target.closest(".giveaway-item-row");
-
-        if (giveawayItems.children.length > 1) {
-            row.remove();
-        }
-
-        updateRemoveButtons();
-    });
-
-    // Cancel and reset the Custom Giveaway form
-    cancelGiveawayBtn.addEventListener("click", function () {
-        giveawayPanel.hidden = true;
-        openGiveawayBtn.setAttribute("aria-expanded", "false");
-
-        // Reset form fields
-        customGiveawayForm.reset();
-
-        // Remove additional merchandise rows
-        const rows = giveawayItems.querySelectorAll(".giveaway-item-row");
-
-        rows.forEach((row, index) => {
-            if (index > 0) {
-                row.remove();
-            }
-        });
-
-        updateRemoveButtons();
-    });
-
-    // Prevent form submission during the demonstration
-    customGiveawayForm.addEventListener("submit", function (event) {
-        event.preventDefault();
-    });
+    return lines;
 }
