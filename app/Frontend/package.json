@@ -1,14 +1,16 @@
 {
   "name": "gcr-inventory-app",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "description": "UH GCR Inventory Management System - web app",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "set-password": "node set-password.js"
   },
   "license": "UNLICENSED",
   "dependencies": {
+    "bcryptjs": "^3.0.2",
     "dotenv": "^18.0.9",
     "express": "^4.22.3",
     "mysql2": "^3.24.6"
