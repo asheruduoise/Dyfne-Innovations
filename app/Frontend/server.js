@@ -1,6 +1,6 @@
 // GCR Inventory web app: serves the pages and exposes the stored procedures as a JSON API.
 // No sign-in by design: staff pick their name from the staff list, and every change records it.
-// The server listens on 127.0.0.1 by default so only this PC can reach it.
+// The server listens on 0.0.0.0 by default so staff on the UH campus network can reach it. 
 require('dotenv').config({ quiet: true });
 const path = require('path');
 const crypto = require('crypto');
