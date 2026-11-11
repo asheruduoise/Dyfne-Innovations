@@ -34,7 +34,7 @@ with no cloud hosting.
 ## Rules
 - The app connects only as `svc_gcr_inventory` (procedures and views, no direct table access).
 - Never commit `.env`. Never put passwords in code.
-- The server listens on 0.0.0.0 (HOST in app/Frontend/.env), so staff on the UH campus network (UH guest Wi-Fi) can reach it at 'http://<hosting PC IP>:3000'. MySQL stays on 127.0.0.1. There is no sign-in; each transaction records the staff
+- The server listens on 0.0.0.0 (HOST in app/Frontend/.env), so staff on the UH campus network (UH guest Wi-Fi) can reach it at `http://<hosting PC IP>:3000`. MySQL stays on 127.0.0.1. There is no sign-in; each transaction records the staff
   member chosen in the staff picker.
 - Backups: `scripts/backup_db.bat` (Windows) or `scripts/backup_db.sh`, scheduled nightly.
 
