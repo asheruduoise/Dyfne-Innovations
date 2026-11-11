@@ -30,5 +30,6 @@ GRANT SELECT ON UH_GCR_Inventory.vw_Security_IntegrityExceptions  TO 'gcr_app_ro
 
 GRANT ALL PRIVILEGES ON UH_GCR_Inventory.* TO 'gcr_dba_role';
 GRANT PROCESS, RELOAD ON *.* TO 'gcr_dba_role';
+GRANT SHOW_ROUTINE ON *.* TO 'gcr_dba_role';
 
 SELECT 'Part 7 complete: roles and grants applied. BUILD FINISHED.' AS Status;

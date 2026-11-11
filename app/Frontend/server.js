@@ -352,7 +352,7 @@ app.use((err, req, res, next) => {
 });
 
 const port = Number(process.env.PORT || 3000);
-const host = process.env.HOST || '127.0.0.1';
+const host = process.env.HOST || '0.0.0.0';
 app.listen(port, host, () => {
   console.log(`GCR Inventory app running at http://${host === '0.0.0.0' ? 'localhost' : host}:${port}`);
   mailer.start(pool);
